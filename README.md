@@ -18,7 +18,7 @@ The base class has the following methods for dataset, item and annotation:
 * on_item_end
 * on_annotation
 
-For each step, the "on_<entity>_start" will perform a pre-process before the actual "on_<entity>" run. Each "
+For each step, the "on_{entity}\_start" will perform a pre-process before the actual "on_<entity>" run. Each "
 on_<entity>" will thread the children of the next level to create an optimal runtime. For annotations, there's a
 function "on_<annotation-type>" (e.g "on_box") to separate the conversion of each type. 
 
