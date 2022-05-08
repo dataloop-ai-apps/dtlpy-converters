@@ -16,11 +16,7 @@ class BaseConverter:
         self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
 
-    def convert_dataset(
-            self,
-            **kwargs
-
-    ):
+    def convert_dataset(self, **kwargs):
         """
         :param dataset: dl.Dataset entity to convert
         :param kwargs:

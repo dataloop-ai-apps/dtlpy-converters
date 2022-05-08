@@ -1,10 +1,10 @@
-import json
-import traceback
 from pathlib import Path
 import dtlpy as dl
-import os
 import numpy as np
+import traceback
 import logging
+import json
+import os
 
 from .. import BaseConverter
 
