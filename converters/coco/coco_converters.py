@@ -6,7 +6,7 @@ import logging
 import json
 import os
 
-from .. import BaseConverter
+from ..base import BaseConverter
 
 try:
     import pycocotools

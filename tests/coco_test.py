@@ -1,7 +1,7 @@
 import unittest
 
 import dtlpy as dl
-from converters import CocoToDataloop, DataloopToCoco
+from converters.coco import CocoToDataloop, DataloopToCoco
 
 
 class TestSum(unittest.TestCase):
