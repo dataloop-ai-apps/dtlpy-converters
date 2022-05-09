@@ -1,7 +1,8 @@
-import logging
-import json
 from pathlib import Path
 import dtlpy as dl
+import logging
+import time
+import json
 
 logger = logging.getLogger(name='dtlpy-converters')
 
@@ -16,19 +17,23 @@ class BaseConverter:
         self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
 
-    def convert_dataset(self, **kwargs):
+    async def convert_dataset(self, **kwargs):
         """
         :param dataset: dl.Dataset entity to convert
         :param kwargs:
         :return:
         """
         self.dataset = kwargs.get('dataset')
-        self.on_dataset_end(**self.on_dataset(**self.on_dataset_start(**kwargs)))
+        return await self.on_dataset_end(
+            ** await self.on_dataset(
+                **await self.on_dataset_start(**kwargs)
+            )
+        )
 
-    def on_dataset_start(self, **kwargs):
+    async def on_dataset_start(self, **kwargs):
         return kwargs
 
-    def on_dataset(self, **kwargs):
+    async def on_dataset(self, **kwargs):
         """
 
         :param: local_path: directory to save annotations to
@@ -42,6 +47,7 @@ class BaseConverter:
         json_path = Path(local_path).joinpath('json')
         files = list(json_path.rglob('*.json'))
 
+        tic = time.time()
         for annotation_json_filepath in files:
             with open(annotation_json_filepath, 'r') as f:
                 data = json.load(f)
@@ -51,19 +57,23 @@ class BaseConverter:
                                          dataset=self.dataset)
                 annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
 
-                self.on_item_end(**self.on_item(**self.on_item_start(item=item,
-                                                                     dataset=self.dataset,
-                                                                     annotations=annotations)))
-
+                context = await self.on_item_end(
+                    **await self.on_item(
+                        **await self.on_item_start(item=item,
+                                                   dataset=self.dataset,
+                                                   annotations=annotations)
+                    )
+                )
+        logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
         return kwargs
 
-    def on_dataset_end(self, **kwargs):
+    async def on_dataset_end(self, **kwargs):
         return kwargs
 
-    def on_item_start(self, **kwargs):
+    async def on_item_start(self, **kwargs):
         return kwargs
 
-    def on_item(self, **kwargs):
+    async def on_item(self, **kwargs):
         item = kwargs.get('item')
         dataset = kwargs.get('dataset')
         annotations = kwargs.get('annotations')
@@ -73,46 +83,46 @@ class BaseConverter:
                     "item": item,
                     "annotation": annotation,
                     "annotations": annotations}
-            outs = self.on_annotation_start(**outs)
+            outs = await self.on_annotation_start(**outs)
             if annotation.type == dl.AnnotationType.BOX:
-                self.on_box(**outs)
+                outs = await self.on_box(**outs)
             elif annotation.type == dl.AnnotationType.POSE:
-                self.on_pose(**outs)
+                outs = await self.on_pose(**outs)
             elif annotation.type == dl.AnnotationType.POLYGON:
-                self.on_polygon(**outs)
+                outs = await self.on_polygon(**outs)
             elif annotation.type == dl.AnnotationType.SEGMENTATION:
-                self.on_polygon(**outs)
-            outs = self.on_annotation_end(**outs)
+                outs = await self.on_polygon(**outs)
+            outs = await self.on_annotation_end(**outs)
             outputs[annotation.id] = outs
         kwargs['outputs'] = outputs
         return kwargs
 
-    def on_item_end(self, **kwargs):
+    async def on_item_end(self, **kwargs):
         return kwargs
 
-    def on_annotation_start(self, **kwargs):
+    async def on_annotation_start(self, **kwargs):
         return kwargs
 
-    def on_annotation_end(self, **kwargs):
+    async def on_annotation_end(self, **kwargs):
         return kwargs
 
     ##################
     # on annotations #
     ##################
-    def on_point(self, **kwargs):
+    async def on_point(self, **kwargs):
         return kwargs
 
-    def on_box(self, **kwargs):
+    async def on_box(self, **kwargs):
         return kwargs
 
-    def on_segmentation(self, **kwargs):
+    async def on_segmentation(self, **kwargs):
         return kwargs
 
-    def on_polygon(self, **kwargs):
+    async def on_polygon(self, **kwargs):
         return kwargs
 
-    def on_class(self, **kwargs):
+    async def on_class(self, **kwargs):
         return kwargs
 
-    def on_pose(self, **kwargs):
+    async def on_pose(self, **kwargs):
         return kwargs

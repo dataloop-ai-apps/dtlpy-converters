@@ -4,7 +4,7 @@ import dtlpy as dl
 from converters.coco import CocoToDataloop, DataloopToCoco
 
 
-class TestSum(unittest.TestCase):
+class TestCoco(unittest.TestCase):
 
     def test_coco_to_dtlpy(self):
         project = dl.projects.get('test-converters-app')

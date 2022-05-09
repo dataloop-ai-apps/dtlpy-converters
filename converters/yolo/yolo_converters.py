@@ -3,6 +3,7 @@ from PIL import Image
 import dtlpy as dl
 import numpy as np
 import logging
+import time
 import json
 import os
 
@@ -11,19 +12,116 @@ from ..base import BaseConverter
 logger = logging.getLogger(name='dtlpy')
 
 
+class YoloToDataloop(BaseConverter):
+
+    async def convert_dataset(self, **context):
+        """
+
+        """
+        # inputs
+        self.annotations_path = context.get('annotations_path')
+        self.label_txt_filepath = context.get('label_txt_filepath')
+        self.images_path = context.get('images_path')
+        self.with_upload = context.get('with_upload')
+        self.add_to_recipe = context.get('add_to_recipe', False)
+        self.dataset: dl.Dataset = context.get('dataset')
+
+        # read labels and handle recipes
+        with open(self.label_txt_filepath, 'r') as f:
+            self.id_to_label_map = {i_label: label.strip() for i_label, label in enumerate(f.readlines())}
+        if self.add_to_recipe:
+            self.dataset.add_labels(label_list=list(self.id_to_label_map.values()))
+
+        # read annotations files and run on items
+        files = list(Path(self.annotations_path).rglob('*.txt'))
+        for txt_file in files:
+            _ = await self.on_item(annotation_filepath=str(txt_file))
+
+    async def on_item(self, **context):
+        annotation_filepath = context.get('annotation_filepath')
+        with open(annotation_filepath, 'r') as f:
+            lines = f.readlines()
+
+        # find images with the same name (ignore image ext)
+        relpath = os.path.relpath(annotation_filepath, self.annotations_path)
+        filename, ext = os.path.splitext(relpath)
+        image_filepaths = list(Path(os.path.join(self.images_path)).rglob(f'{filename}.*'))
+        if len(image_filepaths) != 1:
+            assert AssertionError
+
+        # image filepath found
+        image_filename = str(image_filepaths[0])
+        remote_rel_path = os.path.relpath(image_filename, self.images_path)
+        dirname = os.path.dirname(remote_rel_path)
+        if self.with_upload:
+            # TODO add overwrite as input arg
+            item = self.dataset.items.upload(image_filename,
+                                             remote_path=f'/{dirname}')
+        else:
+            try:
+                item = self.dataset.items.get(f'/{remote_rel_path}')
+            except dl.exceptions.NotFound:
+                raise
+
+        if item.width is None:
+            width = Image.open(image_filename).size[0]
+        else:
+            width = item.width
+        if item.height is None:
+            height = Image.open(image_filename).size[1]
+        else:
+            height = item.height
+
+        annotation_collection = item.annotations.builder()
+        for annotation in lines:
+            annotation_collection.annotations.append(await self.on_annotation(item=item,
+                                                                              annotation=annotation,
+                                                                              width=width,
+                                                                              height=height))
+        await item.annotations._async_upload_annotations(annotation_collection)
+
+    async def on_annotation(self, **context):
+        """
+        Convert from COCO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
+
+        **Prerequisites**: You must be an *owner* or *developer* to use this method.
+        :param context: additional params
+        :return: converted Annotation entity
+        :rtype: dtlpy.entities.annotation.Annotation
+        """
+        annotation = context.get('annotation')
+        width = context.get('width')
+        height = context.get('height')
+        item = context.get('item')
+        # convert txt line to yolo params as floats
+        label_id, x, y, w, h = np.asarray(annotation.strip().split(' ')).astype(float)
+        label = self.id_to_label_map.get(int(label_id), f'{label_id}_MISSING')
+        x = x * width
+        y = y * height
+        w = w * width
+        h = h * height
+        left = x - (w / 2)
+        right = x + (w / 2)
+        top = y - (h / 2)
+        bottom = y + (h / 2)
+        ann_def = dl.Box(top=top,
+                         bottom=bottom,
+                         left=left,
+                         right=right,
+                         label=label)
+        return dl.Annotation.new(annotation_definition=ann_def,
+                                 item=item)
+
+
 class DataloopToYolo(BaseConverter):
     """
     Annotation Converter
     """
 
-    def on_dataset_start(self, **context):
-        return context
-
-    def on_dataset(self, **context):
+    async def on_dataset(self, **context) -> dict:
         """
 
         :param: local_path: directory to save annotations to
-        :param dataset: dl.Dataset
         :param context:
         :return:
         """
@@ -42,6 +140,7 @@ class DataloopToYolo(BaseConverter):
         with open(os.path.join(to_path, 'labels.txt'), 'w') as f:
             f.write('\n'.join(sorted_labels))
 
+        tic = time.time()
         for annotation_json_filepath in files:
             with open(annotation_json_filepath, 'r') as f:
                 data = json.load(f)
@@ -51,19 +150,18 @@ class DataloopToYolo(BaseConverter):
                                          dataset=self.dataset)
                 annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
 
-                self.on_item_end(**self.on_item(**self.on_item_start(item=item,
-                                                                     dataset=self.dataset,
-                                                                     annotations=annotations,
-                                                                     to_path=os.path.join(to_path, 'annotations'))))
+                _ = await self.on_item_end(
+                    **await self.on_item(
+                        **await self.on_item_start(item=item,
+                                                   dataset=self.dataset,
+                                                   annotations=annotations,
+                                                   to_path=os.path.join(to_path, 'annotations'))
+                    )
+                )
+        logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
         return context
 
-    def on_dataset_end(self, **context):
-        return context
-
-    def on_item_start(self, **context):
-        return context
-
-    def on_item(self, **context):
+    async def on_item(self, **context) -> dict:
         item = context.get('item')
         dataset = context.get('dataset')
         annotations = context.get('annotations')
@@ -78,7 +176,9 @@ class DataloopToYolo(BaseConverter):
                         "height": item.height,
                         "annotation": annotation,
                         "annotations": annotations}
-                outs = self.on_annotation_end(**self.on_box(**self.on_annotation_start(**outs)))
+                outs = await self.on_annotation_end(
+                    **await self.on_box(
+                        **await self.on_annotation_start(**outs)))
                 item_yolo_strings.append(outs.get('yolo_string'))
                 outputs[annotation.id] = outs
         context['outputs'] = outputs
@@ -89,7 +189,7 @@ class DataloopToYolo(BaseConverter):
             f.write('\n'.join(item_yolo_strings))
         return context
 
-    def on_box(self, **context):
+    async def on_box(self, **context) -> dict:
         """
         Convert from DATALOOP format to YOLO format. Use this as conversion_func param for functions that ask for this param.
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
@@ -128,107 +228,3 @@ class DataloopToYolo(BaseConverter):
         yolo_string = f'{label_id} {x} {y} {w} {h}'
         context['yolo_string'] = yolo_string
         return context
-
-
-class YoloToDataloop:
-
-    def __init__(self):
-        ...
-
-    def convert_dataset(self, **context):
-        """
-
-        """
-        # inputs
-        self.annotations_path = context.get('annotations_path')
-        self.label_txt_filepath = context.get('label_txt_filepath')
-        self.images_path = context.get('images_path')
-        self.with_upload = context.get('with_upload')
-        self.add_to_recipe = context.get('add_to_recipe', False)
-        self.dataset: dl.Dataset = context.get('dataset')
-
-        # read labels and handle recipes
-        with open(self.label_txt_filepath, 'r') as f:
-            self.id_to_label_map = {i_label: label.strip() for i_label, label in enumerate(f.readlines())}
-        if self.add_to_recipe:
-            self.dataset.add_labels(label_list=list(self.id_to_label_map.values()))
-
-        # read annotations files and run on items
-        files = list(Path(self.annotations_path).rglob('*.txt'))
-        for txt_file in files:
-            self.on_item(annotation_filepath=str(txt_file))
-
-    def on_item(self, **context):
-        annotation_filepath = context.get('annotation_filepath')
-        with open(annotation_filepath, 'r') as f:
-            lines = f.readlines()
-
-        # find images with the same name (ignore image ext)
-        relpath = os.path.relpath(annotation_filepath, self.annotations_path)
-        filename, ext = os.path.splitext(relpath)
-        image_filepaths = list(Path(os.path.join(self.images_path)).rglob(f'{filename}.*'))
-        if len(image_filepaths) != 1:
-            assert AssertionError
-
-        # image filepath found
-        image_filename = str(image_filepaths[0])
-        remote_rel_path = os.path.relpath(image_filename, self.images_path)
-        dirname = os.path.dirname(remote_rel_path)
-        if self.with_upload:
-            # TODO add overwrite as input arg
-            item = self.dataset.items.upload(image_filename,
-                                             remote_path=f'/{dirname}')
-        else:
-            try:
-                item = self.dataset.items.get(f'/{remote_rel_path}')
-            except dl.exceptions.NotFound:
-                raise
-
-        if item.width is None:
-            width = Image.open(image_filename).size[0]
-        else:
-            width = item.width
-        if item.height is None:
-            height = Image.open(image_filename).size[1]
-        else:
-            height = item.height
-
-        annotation_collection = item.annotations.builder()
-        for annotation in lines:
-            annotation_collection.annotations.append(self.on_annotation(item=item,
-                                                                        annotation=annotation,
-                                                                        width=width,
-                                                                        height=height))
-        item.annotations.upload(annotation_collection)
-
-    def on_annotation(self, **context):
-        """
-        Convert from COCO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
-
-        **Prerequisites**: You must be an *owner* or *developer* to use this method.
-        :param context: additional params
-        :return: converted Annotation entity
-        :rtype: dtlpy.entities.annotation.Annotation
-        """
-        annotation = context.get('annotation')
-        width = context.get('width')
-        height = context.get('height')
-        item = context.get('item')
-        # convert txt line to yolo params as floats
-        label_id, x, y, w, h = np.asarray(annotation.strip().split(' ')).astype(float)
-        label = self.id_to_label_map.get(int(label_id), f'{label_id}_MISSING')
-        x = x * width
-        y = y * height
-        w = w * width
-        h = h * height
-        left = x - (w / 2)
-        right = x + (w / 2)
-        top = y - (h / 2)
-        bottom = y + (h / 2)
-        ann_def = dl.Box(top=top,
-                         bottom=bottom,
-                         left=left,
-                         right=right,
-                         label=label)
-        return dl.Annotation.new(annotation_definition=ann_def,
-                                 item=item)

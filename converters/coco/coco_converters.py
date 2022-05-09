@@ -398,7 +398,6 @@ class CocoToDataloop:
 
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
 
-        :param annotation: annotations to convert
         :param kwargs: additional params
         :return: converted Annotation entity
         :rtype: dtlpy.entities.annotation.Annotation
