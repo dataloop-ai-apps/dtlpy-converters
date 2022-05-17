@@ -1,2 +1,3 @@
 dtlpy
 opencv-python
+pandas
