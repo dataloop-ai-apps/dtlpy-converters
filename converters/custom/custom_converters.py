@@ -23,6 +23,8 @@ class DataloopToCustomConverter(BaseConverter):
         self.return_error_filepath = return_error_filepath
         self.outputs = dict()
 
+    # Todo: eval function with try catch that adds error to csv
+
     def create_csv_file(self, csv_filepath, dataset):
         # Changed the key in dict to be: item.dir/item.name+csv
         headers = list()
@@ -33,10 +35,9 @@ class DataloopToCustomConverter(BaseConverter):
                 df = pd.DataFrame(data=list(val.values()),
                                   columns=headers)
                 csv_file_name = os.path.join(csv_filepath, key)
-                os.makedirs(csv_file_name, exist_ok=True)
+                os.makedirs(os.path.dirname(os.path.abspath(csv_file_name)), exist_ok=True)
                 with open(csv_file_name, 'w') as f:
                     f.write(df.to_csv(index=False, line_terminator='\n'))
-
         elif 'dataset' in self.json_input.get('level'):
             lines_list = list()
             for item_id, lines in self.outputs.items():
@@ -45,11 +46,12 @@ class DataloopToCustomConverter(BaseConverter):
             df = pd.concat(lines_list)
             csv_file_name = os.path.join(csv_filepath, '{}_{}.csv'.format(dataset.project.name,
                                                                           dataset.name))
-            os.makedirs(csv_file_name, exist_ok=True)
+            os.makedirs(os.path.dirname(os.path.abspath(csv_file_name)), exist_ok=True)
             with open(csv_file_name, 'w') as f:
                 f.write(df.to_csv(index=False, line_terminator='\n'))
         else:
-            raise ValueError("Only dataset and item level supported for file outputs")
+            raise ValueError("{} not supported,Only dataset and item level supported for file outputs".format(
+                self.json_input.get('level')))
 
     async def convert_dataset(self, **kwargs):
         """
@@ -90,6 +92,7 @@ class DataloopToCustomConverter(BaseConverter):
                 item = dl.Item.from_json(_json=data,
                                          client_api=dl.client_api,
                                          dataset=self.dataset)
+
                 name, ext = os.path.splitext(item.name)
                 dict_item_key = os.path.join(item.dir[1:], name + '.csv')
                 self.outputs[dict_item_key] = dict()
@@ -116,8 +119,8 @@ class DataloopToCustomConverter(BaseConverter):
         item = kwargs.get('item')
         annotations = kwargs.get('annotations')
         dict_item_key = kwargs.get('dict_item_key')
-
         project = dataset.project
+
         if len(annotations) == 0:
             self.outputs[dict_item_key][item.id] = dict()
             if "csv" == self.json_input.get('output'):
@@ -127,8 +130,11 @@ class DataloopToCustomConverter(BaseConverter):
                         continue
                     self.outputs[dict_item_key][item.id][header] = eval(value)
                 return kwargs
-            else:
+            elif 'json' == self.json_input.get('output'):
                 raise NotImplementedError('Support for Json outputs is not supported yet')
+            else:
+                raise ValueError("{} filetype not supported".format(self.json_input.get('template')))
+
         for i_annotation, annotation in enumerate(annotations.annotations):
             if "video" in item.mimetype:
                 frame_res = await self.on_annotation_end(
@@ -148,8 +154,10 @@ class DataloopToCustomConverter(BaseConverter):
                             self.outputs[dict_item_key][annotation.id][header] = None
                             continue
                         self.outputs[dict_item_key][annotation.id][header] = eval(value)
-                else:
+                elif 'json' == self.json_input.get('output'):
                     raise NotImplementedError('Support for Json outputs is not supported yet')
+                else:
+                    raise ValueError("{} filetype not supported".format(self.json_input.get('template')))
         return kwargs
 
     async def on_annotation(self, **kwargs):
@@ -165,8 +173,11 @@ class DataloopToCustomConverter(BaseConverter):
             if "csv" == self.json_input.get('output'):
                 for header, value in self.json_input.get('template').items():
                     kwargs['output'][(annotation.id, frame_num)][header] = eval(value)
-            else:
+            elif 'json' == self.json_input.get('output'):
                 raise NotImplementedError('Support for Json outputs is not supported yet')
+            else:
+                raise ValueError("{} filetype not supported".format(self.json_input.get('template')))
+
 
         return kwargs
 
