@@ -24,7 +24,31 @@ function "on_{annotation-type}" (e.g "on_box") to separate the conversion of eac
 The following diagram demonstrate the pre/post functions and the parallelism of the conversion:
 ![diagram](assets/parallel_diagram.png)
 
-## To Dataloop
+## Examples
+### Coco To Dataloop
+
+Here's a short example for downloading and converting a dataset.
+Dataset's annotations will be downloaded to the `local_path` and the output file will go to `to_path`
+
+```python
+import asyncio
+import dtlpy as dl
+from converters.coco import DataloopToCoco
+
+dataset = dl.datasets.get(dataset_id='62826b8e721d779169f840fe')
+local_path = '/home/beethoven/jsons'
+to_path = '/home/beethoven/coco_file.json'
+
+conv = DataloopToCoco()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(conv.convert_dataset(to_path=to_path,
+                                             with_binaries=False,
+                                             with_download=True,
+                                             local_path=local_path,
+                                             dataset=dataset))
+
+```
+
 
 ## From Dataloop
 

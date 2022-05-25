@@ -14,17 +14,23 @@ logger = logging.getLogger(name='dtlpy')
 
 class YoloToDataloop(BaseConverter):
 
-    async def convert_dataset(self, **context):
+    async def convert_dataset(self,
+                              dataset,
+                              annotations_path,
+                              label_txt_filepath,
+                              images_path,
+                              with_upload,
+                              add_to_recipe=False):
         """
-
+        Converting a dataset from Yolo format to Dataloop.
         """
         # inputs
-        self.annotations_path = context.get('annotations_path')
-        self.label_txt_filepath = context.get('label_txt_filepath')
-        self.images_path = context.get('images_path')
-        self.with_upload = context.get('with_upload')
-        self.add_to_recipe = context.get('add_to_recipe', False)
-        self.dataset: dl.Dataset = context.get('dataset')
+        self.annotations_path = annotations_path
+        self.label_txt_filepath = label_txt_filepath
+        self.images_path = images_path
+        self.with_upload = with_upload
+        self.add_to_recipe = add_to_recipe
+        self.dataset: dl.Dataset = dataset
 
         # read labels and handle recipes
         with open(self.label_txt_filepath, 'r') as f:
@@ -38,6 +44,9 @@ class YoloToDataloop(BaseConverter):
             _ = await self.on_item(annotation_filepath=str(txt_file))
 
     async def on_item(self, **context):
+        """
+
+        """
         annotation_filepath = context.get('annotation_filepath')
         with open(annotation_filepath, 'r') as f:
             lines = f.readlines()
@@ -144,20 +153,20 @@ class DataloopToYolo(BaseConverter):
         for annotation_json_filepath in files:
             with open(annotation_json_filepath, 'r') as f:
                 data = json.load(f)
-                json_annotations = data.pop('annotations')
-                item = dl.Item.from_json(_json=data,
-                                         client_api=dl.client_api,
-                                         dataset=self.dataset)
-                annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
+            json_annotations = data.pop('annotations')
+            item = dl.Item.from_json(_json=data,
+                                     client_api=dl.client_api,
+                                     dataset=self.dataset)
+            annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
 
-                _ = await self.on_item_end(
-                    **await self.on_item(
-                        **await self.on_item_start(item=item,
-                                                   dataset=self.dataset,
-                                                   annotations=annotations,
-                                                   to_path=os.path.join(to_path, 'annotations'))
-                    )
+            _ = await self.on_item_end(
+                **await self.on_item(
+                    **await self.on_item_start(item=item,
+                                               dataset=self.dataset,
+                                               annotations=annotations,
+                                               to_path=os.path.join(to_path, 'annotations'))
                 )
+            )
         logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
         return context
 

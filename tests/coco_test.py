@@ -9,9 +9,9 @@ class TestCoco(unittest.TestCase):
     def test_coco_to_dtlpy(self):
         project = dl.projects.get('test-converters-app')
         dataset = project.datasets.get('test-coco-converters')
-        annotation_filepath = '../converters/coco_converters/examples/coco/annotations.json'
-        images_path = '../converters/coco_converters/examples/images'
-        to_path = '../converters/coco_converters/examples/dataloop'
+        annotation_filepath = '../converters/coco/examples/coco/annotations.json'
+        images_path = '../converters/coco/examples/images'
+        to_path = '../converters/coco/examples/dataloop'
 
         conv = CocoToDataloop()
         conv.convert_dataset(annotation_filepath=annotation_filepath,
