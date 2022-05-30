@@ -23,7 +23,6 @@ class COCOUtils:
 
     @staticmethod
     def binary_mask_to_rle_encode(binary_mask):
-
         fortran_ground_truth_binary_mask = np.asfortranarray(binary_mask.astype(np.uint8))
         encoded_ground_truth = pycocotools.mask.encode(fortran_ground_truth_binary_mask)
         encoded_ground_truth['counts'] = encoded_ground_truth['counts'].decode()
@@ -59,6 +58,13 @@ class COCOUtils:
 
 class DataloopToCoco(BaseConverter):
     def __init__(self, concurrency=6, return_error_filepath=False):
+        """
+        Dataloop to COCO converter instance
+        :param concurrency:
+        :param return_error_filepath:
+
+
+        """
         super(DataloopToCoco, self).__init__(concurrency=concurrency, return_error_filepath=return_error_filepath)
         self.images = dict()
         self.categories = dict()
@@ -66,6 +72,9 @@ class DataloopToCoco(BaseConverter):
 
     @staticmethod
     def gen_coco_categories(instance_map, recipe):
+        """
+        Generate COCO category map from the dataset's ontology
+        """
         categories = list()
         last_id = 0
         for label, label_id in instance_map.items():
@@ -98,6 +107,14 @@ class DataloopToCoco(BaseConverter):
         return categories
 
     async def on_dataset(self, **kwargs):
+        """
+        Callback to tun the conversion on a dataset.
+        Will be called after on_dataset_start and before on_dataset_end
+
+        :param dataset:
+        :param with_download:
+        :param local_path:
+        """
         with_download = kwargs.get('with_download')
         dataset: dl.Dataset = kwargs.get('dataset')
         local_path = kwargs.get('local_path')
@@ -130,6 +147,10 @@ class DataloopToCoco(BaseConverter):
         return kwargs
 
     async def on_dataset_end(self, **kwargs):
+        """
+
+        :param to_path:
+        """
         to_path: str = kwargs.get('to_path')
         final_json = {'annotations': list(self.annotations.values()),
                       'categories': list(self.categories.values()),
@@ -137,10 +158,12 @@ class DataloopToCoco(BaseConverter):
         with open(to_path, 'w') as f:
             json.dump(final_json, f, indent=2)
 
-    async def on_item_start(self, **kwargs):
-        return kwargs
-
     async def on_item(self, **kwargs):
+        """
+
+        :param item:
+        :param annotations:
+        """
         item = kwargs.get('item')
         annotations = kwargs.get('annotations')
 
@@ -149,19 +172,28 @@ class DataloopToCoco(BaseConverter):
                                 'width': item.width,
                                 'height': item.height
                                 }
+
         for i_annotation, annotation in enumerate(annotations.annotations):
+            context = dict(annotation=annotation,
+                           annotations=annotations,
+                           item=item)
+            context = await self.on_annotation_start(**context)
             if annotation.type == dl.AnnotationType.BOX:
-                await self.on_box(annotation=annotation, annotations=annotations, item=item)
+                context = await self.on_box(**context)
             elif annotation.type == dl.AnnotationType.POSE:
-                await self.on_pose(annotation=annotation, annotations=annotations, item=item)
+                context = await self.on_pose(**context)
             elif annotation.type == dl.AnnotationType.POLYGON:
-                await self.on_polygon(annotation=annotation, annotations=annotations, item=item)
+                context = await self.on_polygon(**context)
             elif annotation.type == dl.AnnotationType.SEGMENTATION:
-                await self.on_polygon(annotation=annotation, annotations=annotations, item=item)
+                context = await self.on_polygon(**context)
+            context = await self.on_annotation_end(**context)
 
         return kwargs
 
     async def on_item_end(self, **kwargs):
+        """
+
+        """
         self.pbar.update()
         return kwargs
 
@@ -169,11 +201,19 @@ class DataloopToCoco(BaseConverter):
     # on annotations #
     ##################
     async def on_point(self, **kwargs):
+        # handled in the pose. single point is not supported
         ...
 
     async def on_pose(self, **kwargs):
-        try:
+        """
+        :param kwargs: See below
 
+        * item (``dl.Item``) -- the current item
+        * annotation (``list``) -- the current annotation
+        * annotations (``dl.AnnotationCollection``) -- the entire annotation collection of the item
+
+        """
+        try:
             annotation = kwargs.get('annotation')
             annotations = kwargs.get('annotations')
             item = kwargs.get('item')
@@ -246,6 +286,10 @@ class DataloopToCoco(BaseConverter):
             print(traceback.format_exc())
 
     async def on_box(self, **kwargs):
+        """
+        :param item:
+        :param annotation:
+        """
         try:
             annotation = kwargs.get('annotation')
             item = kwargs.get('item')
@@ -276,15 +320,20 @@ class DataloopToCoco(BaseConverter):
             if keypoints is not None:
                 ann["keypoints"] = keypoints
             label = annotation.label
-            ann['category_id'] = self.categories[label]['id']
+            ann['category_id'] = self.dataset.instance_map[label]
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
             self.annotations[annotation.id] = ann
+            return kwargs
 
         except Exception:
             print(traceback.format_exc())
 
     async def on_segmentation(self, **kwargs):
+        """
+        :param item:
+        :param annotation:
+        """
         try:
             annotation = kwargs.get('annotation')
             item = kwargs.get('item')
@@ -317,11 +366,16 @@ class DataloopToCoco(BaseConverter):
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
             self.annotations[annotation.id] = ann
+            return kwargs
 
         except Exception:
             print(traceback.format_exc())
 
     async def on_polygon(self, **kwargs):
+        """
+        :param item:
+        :param annotation:
+        """
         try:
             annotation = kwargs.get('annotation')
             item = kwargs.get('item')
@@ -352,6 +406,7 @@ class DataloopToCoco(BaseConverter):
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
             self.annotations[annotation.id] = ann
+            return kwargs
 
         except Exception:
             print(traceback.format_exc())
@@ -360,7 +415,7 @@ class DataloopToCoco(BaseConverter):
         raise Exception('Unable to convert annotation of type "polyline" to coco')
 
     async def on_class(self, **kwargs):
-        ...
+        raise Exception('Unable to convert annotation of type "class" to coco')
 
 
 class CocoToDataloop:

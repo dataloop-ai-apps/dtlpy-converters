@@ -18,17 +18,19 @@ The base class has the following methods for dataset, item and annotation:
 * on_item_end
 * on_annotation
 
-For each step, the "on_{entity}\_start" will perform a pre-process before the actual "on_{entity}" run. Each "on_{entity}" will thread the children of the next level to create an optimal runtime. For annotations, there's a
-function "on_{annotation-type}" (e.g "on_box") to separate the conversion of each type. 
+For each step, the "on_{entity}\_start" will perform a pre-process before the actual "on_{entity}" run. Each "on_
+{entity}" will thread the children of the next level to create an optimal runtime. For annotations, there's a function "
+on_{annotation-type}" (e.g "on_box") to separate the conversion of each type.
 
 The following diagram demonstrate the pre/post functions and the parallelism of the conversion:
 ![diagram](assets/parallel_diagram.png)
 
 ## Examples
+
 ### Coco To Dataloop
 
-Here's a short example for downloading and converting a dataset.
-Dataset's annotations will be downloaded to the `local_path` and the output file will go to `to_path`
+Here's a short example for downloading and converting a dataset. Dataset's annotations will be downloaded to
+the `local_path` and the output file will go to `to_path`
 
 ```python
 import asyncio
@@ -49,6 +51,21 @@ loop.run_until_complete(conv.convert_dataset(to_path=to_path,
 
 ```
 
+To add you custom callback function you can inherit from the mail class and override the methods:
+
+```python
+class WhaaaConverter(DataloopToCoco):
+    async def on_annotation_end(self, **kwargs):
+        print('whaaaaa')
+
+
+conv = WhaaaConverter()
+loop.run_until_complete(conv.convert_dataset(to_path=to_path,
+                                             with_binaries=False,
+                                             with_download=True,
+                                             local_path=local_path,
+                                             dataset=dataset))
+```
 
 ## From Dataloop
 
