@@ -1,0 +1,27 @@
+{
+    "output": "json",
+	"level": "dataset",
+    "template": {
+        "Project Name": "project.name",
+        "Project ID": "project.id",
+        "Datasets": [{
+                "Dataset Name": "dataset.name",
+                "Dataset ID": "dataset.id",
+                "Items": [{
+                        "Item Name": "item.name",
+                        "Item ID": "item.id",
+                        "Item Dimensions": "'{}-{}'.format(item.width,item.height)",
+                        "Item Size": "item.width*item.height",
+                        "Annotations": [{
+                                "Annotation ID": "annotation.id",
+                                "Annotation Label": "annotation.label",
+                                "Annotation Attributes": "annotation.attributes",
+                                "Number of frames": "annotation.nb_frames"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
