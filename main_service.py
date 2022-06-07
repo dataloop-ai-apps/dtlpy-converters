@@ -5,6 +5,7 @@ import datetime
 import dtlpy as dl
 import shutil
 import logging
+from __version__ import version
 
 logger = logging.getLogger(name=__name__)
 
@@ -91,9 +92,6 @@ def test():
     # ex.service.execute(execution_input=ex.input, function_name=ex.function_name)
     self = ServiceRunner()
     self.voc(dataset=dataset)
-
-
-import dtlpy as dl
 
 
 def get_modules():
@@ -224,9 +222,6 @@ def get_slots():
 
 
 def deploy():
-    import dtlpy as dl
-    import os
-
     env = 'rc'
     dl.setenv(env)
     # dl.login()
@@ -238,11 +233,6 @@ def deploy():
     ################
     # push package #
     ################
-    with open(os.path.join(os.getcwd(), '.bumpversion.cfg'), 'r') as f:
-        lines = f.readlines()
-    version = [line for line in lines if 'current_version' in line][0].replace(' ', '').strip().replace(
-        'current_version=', '')
-
     package = project.packages.push(
         package_name=package_name,
         modules=get_modules(),
@@ -279,6 +269,8 @@ def deploy():
     service.package_revision = package.version
     service = service.update(True)
 
+
+def test_service():
     execution_inputs = [
         dl.FunctionIO(name='dataset', type=dl.PackageInputType.DATASET, value='5d8cee9eaa2e03613f207b0b'),
         dl.FunctionIO(name='query', type=dl.PackageInputType.JSON, value={})
