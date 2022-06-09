@@ -1,6 +1,6 @@
 {
     "output": "csv",
-    "level": "item",
+    "level": "dataset",
     "template": {
         "Project Name": "project.name",
         "Project ID": "project.id",
