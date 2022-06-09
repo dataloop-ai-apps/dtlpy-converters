@@ -1,0 +1,69 @@
+{
+  "id": "6277f136445f1627a4787e31",
+  "datasetId": "6277ea657c3a7edd4942d92d",
+  "url": "https://rc-gate.dataloop.ai/api/v1/items/6277f136445f1627a4787e31",
+  "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/6277ea657c3a7edd4942d92d",
+  "createdAt": "2022-05-08T16:35:02.000Z",
+  "dir": "/",
+  "filename": "/000000000034.jpg",
+  "type": "file",
+  "hidden": false,
+  "metadata": {
+    "system": {
+      "originalname": "000000000034.jpg",
+      "size": 406018,
+      "encoding": "7bit",
+      "taskStatusLog": [],
+      "mimetype": "image/jpeg",
+      "refs": [],
+      "isBinary": true,
+      "channels": 3,
+      "exif": {},
+      "height": 425,
+      "image-preprocess-fail": "image size is not correct ffprobe result is (640, 425) and exif result is (3575, 2375)",
+      "width": 640
+    }
+  },
+  "name": "000000000034.jpg",
+  "creator": "or@dataloop.ai",
+  "stream": "https://rc-gate.dataloop.ai/api/v1/items/6277f136445f1627a4787e31/stream",
+  "thumbnail": "https://rc-gate.dataloop.ai/api/v1/items/6277f136445f1627a4787e31/thumbnail",
+  "annotations": [
+    {
+      "id": "6277f3357c3a7ed99242d9d1",
+      "datasetId": "6277ea657c3a7edd4942d92d",
+      "itemId": "6277f136445f1627a4787e31",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/6277f3357c3a7ed99242d9d1",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/6277f136445f1627a4787e31",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/6277ea657c3a7edd4942d92d",
+      "type": "box",
+      "label": "zebra",
+      "coordinates": [
+        {
+          "x": 0.960000000000008,
+          "y": 20.060000000000002,
+          "z": 0
+        },
+        {
+          "x": 442.19007999999997,
+          "y": 399.21015,
+          "z": 0
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "coordinateVersion": "v2"
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2022-05-08T16:43:33.677Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2022-05-08T16:43:33.677Z",
+      "hash": "f6b0b62da5d11c339bd8ce3c7be2bb3929ca9f7e",
+      "source": "sdk"
+    }
+  ],
+  "annotationsCount": 1,
+  "annotated": true
+}

@@ -31,10 +31,8 @@ class TestYolo(unittest.TestCase):
         loop.run_until_complete(conv.convert_dataset(annotations_path=annotations_path,
                                                      label_txt_filepath=label_txt_filepath,
                                                      add_to_recipe=add_to_recipe,
-                                                     to_path=to_path,
                                                      images_path=images_path,
-                                                     with_upload=True,
-                                                     with_items=True,
+                                                     upload_images=True,
                                                      dataset=self.dataset))
         # self.assertEqual()
 

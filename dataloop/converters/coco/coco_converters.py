@@ -461,36 +461,41 @@ class CocoToDataloop:
     def __init__(self):
         ...
 
-    def convert_dataset(self, **kwargs):
-        annotation_filepath = kwargs.get('annotation_filepath')
-        self.with_upload = kwargs.get('with_upload')
-        self.images_path = kwargs.get('images_path')
-        self.with_items = kwargs.get('with_items')
-        self.box_only = kwargs.get('box_only', False)
-        self.to_polygon = kwargs.get('to_polygon', False)
-        self.dataset = kwargs.get('dataset')
+    async def convert_dataset(self,
+                              dataset,
+                              annotation_filepath,
+                              upload_images=True,
+                              images_path=None,
+                              box_only=False,
+                              to_polygon=False):
+
+        self.upload_images = upload_images
+        self.images_path = images_path
+        self.box_only = box_only
+        self.to_polygon = to_polygon
+        self.dataset = dataset
         self.coco_dataset = pycocotools.coco.COCO(annotation_file=annotation_filepath)
         for coco_image_id, coco_image in self.coco_dataset.imgs.items():
-            self.on_item(coco_image=coco_image)
+            await self.on_item(coco_image=coco_image)
 
-    def on_item(self, **kwargs):
+    async def on_item(self, **kwargs):
         coco_image = kwargs.get('coco_image')
 
         filename = coco_image['file_name']
         coco_image_id = coco_image['id']
         coco_annotations = self.coco_dataset.imgToAnns[coco_image_id]
-        if self.with_upload:
+        if self.upload_images:
             item = self.dataset.items.upload(os.path.join(self.images_path, filename))
         else:
             item = self.dataset.items.get(f'/{filename}')
 
         annotation_collection = item.annotations.builder()
         for coco_annotation in coco_annotations:
-            annotation_collection.annotations.append(self.on_annotation(item=item,
-                                                                        coco_annotation=coco_annotation))
+            annotation_collection.annotations.append(await self.on_annotation(item=item,
+                                                                              coco_annotation=coco_annotation))
         item.annotations.upload(annotation_collection)
 
-    def on_annotation(self, **kwargs):
+    async def on_annotation(self, **kwargs):
         """
         Convert from COCO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
 
@@ -515,11 +520,11 @@ class CocoToDataloop:
             if isinstance(segmentation, dict):
                 mask = COCOUtils.rle_to_binary_mask(segmentation)
                 if self.to_polygon:
-                    ann_def = dl.Segmentation(label=label,
-                                              geo=mask)
-                else:
                     ann_def = dl.Polygon.from_segmentation(label=label,
                                                            mask=mask)
+                else:
+                    ann_def = dl.Segmentation(label=label,
+                                              geo=mask)
             else:
                 if len(segmentation) > 1:
                     logger.warning('Multiple polygons per annotation is not supported. coco annotation id: {}'.format(

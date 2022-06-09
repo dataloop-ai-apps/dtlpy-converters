@@ -19,7 +19,7 @@ class YoloToDataloop(BaseConverter):
                               annotations_path,
                               label_txt_filepath,
                               images_path,
-                              with_upload,
+                              upload_images,
                               add_to_recipe=False):
         """
         Converting a dataset from Yolo format to Dataloop.
@@ -28,7 +28,7 @@ class YoloToDataloop(BaseConverter):
         self.annotations_path = annotations_path
         self.label_txt_filepath = label_txt_filepath
         self.images_path = images_path
-        self.with_upload = with_upload
+        self.upload_images = upload_images
         self.add_to_recipe = add_to_recipe
         self.dataset: dl.Dataset = dataset
 
@@ -62,7 +62,7 @@ class YoloToDataloop(BaseConverter):
         image_filename = str(image_filepaths[0])
         remote_rel_path = os.path.relpath(image_filename, self.images_path)
         dirname = os.path.dirname(remote_rel_path)
-        if self.with_upload:
+        if self.upload_images:
             # TODO add overwrite as input arg
             item = self.dataset.items.upload(image_filename,
                                              remote_path=f'/{dirname}')

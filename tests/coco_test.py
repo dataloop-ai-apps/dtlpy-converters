@@ -1,5 +1,5 @@
 import unittest
-
+import asyncio
 import dtlpy as dl
 from dataloop.converters.coco import CocoToDataloop, DataloopToCoco
 
@@ -14,12 +14,13 @@ class TestCoco(unittest.TestCase):
         to_path = '../examples/coco/dataloop'
 
         conv = CocoToDataloop()
-        conv.convert_dataset(annotation_filepath=annotation_filepath,
-                             to_path=to_path,
-                             images_path=images_path,
-                             with_upload=True,
-                             with_items=True,
-                             dataset=dataset)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(conv.convert_dataset(annotation_filepath=annotation_filepath,
+                                                     to_path=to_path,
+                                                     images_path=images_path,
+                                                     with_upload=True,
+                                                     with_items=True,
+                                                     dataset=dataset))
         # self.assertEqual()
 
     def test_dtlpy_to_coco(self):
