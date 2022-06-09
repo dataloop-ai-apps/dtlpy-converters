@@ -3,7 +3,7 @@ import unittest
 import logging
 import asyncio
 
-from converters.voc import VocToDataloop, DataloopToVoc
+from dataloop.converters.voc import VocToDataloop, DataloopToVoc
 
 logging.basicConfig(level='INFO')
 
@@ -20,9 +20,9 @@ class TestVoc(unittest.TestCase):
         cls.dataset.delete(True, True)
 
     def test_1_voc_to_dtlpy(self):
-        annotations_path = '../converters/voc/examples/voc/annotations'
-        images_path = '../converters/voc/examples/images'
-        to_path = '../converters/voc/examples/dataloop'
+        annotations_path = '../examples/voc/voc/annotations'
+        images_path = '../examples/voc/images'
+        to_path = '../examples/voc/dataloop'
         add_to_recipe = True
 
         conv = VocToDataloop()

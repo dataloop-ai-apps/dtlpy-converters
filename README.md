@@ -27,25 +27,25 @@ The following diagram demonstrate the pre/post functions and the parallelism of 
 
 ## Examples
 
-### Coco To Dataloop
+### Dataloop to COCO
 
-Here's a short example for downloading and converting a dataset. Dataset's annotations will be downloaded to
-the `local_path` and the output file will go to `to_path`
+Here's a short example for downloading and converting a dataset. Dataset's annotations (and images) will be downloaded
+to the `local_path` and the output file will go to `to_path`
 
 ```python
 import asyncio
 import dtlpy as dl
-from converters.coco import DataloopToCoco
+from dataloop.converters import coco
 
 dataset = dl.datasets.get(dataset_id='62826b8e721d779169f840fe')
 local_path = '/home/beethoven/jsons'
 to_path = '/home/beethoven/coco_file.json'
 
-conv = DataloopToCoco()
+conv = coco.DataloopToCoco()
 loop = asyncio.get_event_loop()
 loop.run_until_complete(conv.convert_dataset(to_path=to_path,
-                                             with_binaries=False,
-                                             with_download=True,
+                                             download_images=False,
+                                             download_annotations=True,
                                              local_path=local_path,
                                              dataset=dataset))
 
@@ -54,24 +54,52 @@ loop.run_until_complete(conv.convert_dataset(to_path=to_path,
 To add you custom callback function you can inherit from the mail class and override the methods:
 
 ```python
-class WhaaaConverter(DataloopToCoco):
+class WhaaaConverter(coco.DataloopToCoco):
     async def on_annotation_end(self, **kwargs):
         print('whaaaaa')
 
 
 conv = WhaaaConverter()
 loop.run_until_complete(conv.convert_dataset(to_path=to_path,
-                                             with_binaries=False,
-                                             with_download=True,
+                                             download_images=False,
+                                             download_annotations=True,
                                              local_path=local_path,
                                              dataset=dataset))
 ```
 
-## From Dataloop
+## VOC to Dataloop
+
+We have a small (10 images) VOC dataset sample to convert and upload to the Dataloop platform:
+
+```python
+import asyncio
+import dtlpy as dl
+from dataloop.converters.voc import VocToDataloop
+
+annotations_path = '../converters/voc/examples/voc/annotations'
+images_path = '../converters/voc/examples/images'
+to_path = '../converters/voc/examples/dataloop'
+add_to_recipe = True
+project = dl.projects.create('VOC project')
+dataset = project.datasets.create('VOC dataset')
+conv = VocToDataloop()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(conv.convert_dataset(annotations_path=annotations_path,
+                                             add_to_recipe=add_to_recipe,
+                                             to_path=to_path,
+                                             images_path=images_path,
+                                             with_upload=True,
+                                             with_items=True,
+                                             dataset=dataset))
+```
 
 ## Run Tests
 
 ## Create App (Service)
 
-## Contribute 
+## Contribute
+
+We welcome any type of contribute! For bug or feature requests please open an issue.
+
+
 

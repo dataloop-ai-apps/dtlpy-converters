@@ -1,7 +1,7 @@
 import unittest
 
 import dtlpy as dl
-from converters.coco import CocoToDataloop, DataloopToCoco
+from dataloop.converters.coco import CocoToDataloop, DataloopToCoco
 
 
 class TestCoco(unittest.TestCase):
@@ -9,9 +9,9 @@ class TestCoco(unittest.TestCase):
     def test_coco_to_dtlpy(self):
         project = dl.projects.get('test-converters-app')
         dataset = project.datasets.get('test-coco-converters')
-        annotation_filepath = '../converters/coco/examples/coco/annotations.json'
-        images_path = '../converters/coco/examples/images'
-        to_path = '../converters/coco/examples/dataloop'
+        annotation_filepath = '../examples/coco/coco/annotations.json'
+        images_path = '../examples/coco/images'
+        to_path = '../examples/coco/dataloop'
 
         conv = CocoToDataloop()
         conv.convert_dataset(annotation_filepath=annotation_filepath,

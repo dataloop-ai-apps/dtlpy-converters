@@ -3,7 +3,7 @@ import dtlpy as dl
 import logging
 import asyncio
 
-from converters.yolo import YoloToDataloop, DataloopToYolo
+from dataloop.converters.yolo import YoloToDataloop, DataloopToYolo
 
 logging.basicConfig(level='INFO')
 
@@ -20,10 +20,10 @@ class TestYolo(unittest.TestCase):
         cls.dataset.delete(True, True)
 
     def test_1_yolo_to_dtlpy(self):
-        annotations_path = '../converters/yolo/examples/yolo/annotations'
-        label_txt_filepath = '../converters/yolo/examples/yolo/labels.txt'
-        images_path = '../converters/yolo/examples/images'
-        to_path = '../converters/yolo/examples/dataloop'
+        annotations_path = '../examples/yolo/yolo/annotations'
+        label_txt_filepath = '../examples/yolo/yolo/labels.txt'
+        images_path = '../examples/yolo/images'
+        to_path = '../examples/yolo/dataloop'
         add_to_recipe = True
 
         conv = YoloToDataloop()
