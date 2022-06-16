@@ -1,3 +1,4 @@
+import os
 import unittest
 import asyncio
 import dtlpy as dl
@@ -8,32 +9,32 @@ class TestCoco(unittest.TestCase):
 
     def test_coco_to_dtlpy(self):
         project = dl.projects.get('test-converters-app')
-        dataset = project.datasets.get('test-coco-converters')
+        dataset = project.datasets.get('clone-test-coco-converters')
         annotation_filepath = '../examples/coco/coco/annotations.json'
         images_path = '../examples/coco/images'
-        to_path = '../examples/coco/dataloop'
 
         conv = CocoToDataloop()
         loop = asyncio.get_event_loop()
         loop.run_until_complete(conv.convert_dataset(annotation_filepath=annotation_filepath,
-                                                     to_path=to_path,
                                                      images_path=images_path,
-                                                     with_upload=True,
-                                                     with_items=True,
-                                                     dataset=dataset))
+                                                     dataset=dataset,
+                                                     upload_images=True,
+                                                     box_only=False,
+                                                     to_polygon=False))
         # self.assertEqual()
 
     def test_dtlpy_to_coco(self):
         project = dl.projects.get('test-converters-app')
-        dataset = project.datasets.get('test-coco-converters')
-        images_path = '../tmp/images'
+        dataset = project.datasets.get('clone-test-coco-converters')
         to_path = '../tmp/coco'
-
+        local_path = r'../coco_annotation_path'
         conv = DataloopToCoco()
-        conv.convert_dataset(to_path=to_path,
-                             images_path=images_path,
-                             with_binaries=False,
-                             dataset=dataset)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(conv.convert_dataset(to_path=to_path,
+                                                     download_images=False,
+                                                     download_annotations=True,
+                                                     local_path=local_path,
+                                                     dataset=dataset))
         # self.assertEqual()
 
 

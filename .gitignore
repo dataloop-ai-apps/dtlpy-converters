@@ -280,3 +280,4 @@ pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/venv,pycharm,python
 tmp
+coco_annotation_path

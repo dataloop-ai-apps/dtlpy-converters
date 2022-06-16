@@ -121,8 +121,9 @@ class DataloopToCoco(BaseConverter):
         self.dataset = kwargs.get('dataset')
         self.to_path = kwargs.get('to_path')
         self.download_images = kwargs.get('download_images')
-        self.download_annotations = kwargs.get('download_annotations')
+        self.download_annotations = kwargs.get('download_annotations', True)
         self.use_rle = kwargs.get('use_rle')
+        self.local_path = kwargs.get('local_path')
 
         return await self.on_dataset_end(
             **await self.on_dataset(
@@ -137,10 +138,10 @@ class DataloopToCoco(BaseConverter):
         """
 
         if self.download_annotations:
-            self.dataset.download_annotations(local_path=self.to_path)
-            json_path = Path(self.to_path).joinpath('json')
+            local_path = self.dataset.download_annotations(local_path=self.local_path)
+            json_path = Path(local_path).joinpath('json')
         else:
-            json_path = Path(self.to_path)
+            json_path = Path(self.local_path)
         files = list(json_path.rglob('*.json'))
         self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.dataset.instance_map,
                                                                                 self.dataset.recipes.list()[0])}
@@ -172,7 +173,9 @@ class DataloopToCoco(BaseConverter):
         final_json = {'annotations': list(self.annotations.values()),
                       'categories': list(self.categories.values()),
                       'images': list(self.images.values())}
-        with open(self.to_path, 'w') as f:
+
+        os.makedirs(self.to_path, exist_ok=True)
+        with open(os.path.join(self.to_path, "coco.json"), 'w') as f:
             json.dump(final_json, f, indent=2)
 
     async def on_item(self, **kwargs):
