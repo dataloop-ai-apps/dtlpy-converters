@@ -68,6 +68,7 @@ class DataloopToCoco(BaseConverter):
         self.images = dict()
         self.categories = dict()
         self.annotations = dict()
+        self.json_path = None
 
     @staticmethod
     def gen_coco_categories(instance_map, recipe):
@@ -139,10 +140,10 @@ class DataloopToCoco(BaseConverter):
 
         if self.download_annotations:
             local_path = self.dataset.download_annotations(local_path=self.local_path)
-            json_path = Path(local_path).joinpath('json')
+            self.json_path = Path(local_path).joinpath('json')
         else:
-            json_path = Path(self.local_path)
-        files = list(json_path.rglob('*.json'))
+            self.json_path = Path(self.local_path)
+        files = list(self.json_path.rglob('*.json'))
         self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.dataset.instance_map,
                                                                                 self.dataset.recipes.list()[0])}
 
