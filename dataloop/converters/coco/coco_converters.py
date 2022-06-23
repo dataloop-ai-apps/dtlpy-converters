@@ -105,25 +105,25 @@ class DataloopToCoco(BaseConverter):
 
         return categories
 
-    async def convert_dataset(self, **kwargs):
+    async def convert_dataset(self, dataset, to_path, download_annotations=True, download_images=False, use_rle=True):
         """
         Convert Dataloop Dataset annotation to COCO format
 
         :param dataset: dl.Dataset entity to convert
         :param to_path: where to save the converted annotation
-        :param local_path: download Dataloop annotation (or use existing) from this path
         :param download_images: download the images with the converted annotations
         :param download_annotations: download annotations from Dataloop or use local
         :param use_rle: convert both segmentation and polygons to RLE encoding.
             if None - default for segmentation is RLE default for polygon is coordinates list
         :return:
         """
-        self.dataset = kwargs.get('dataset')
-        self.to_path = kwargs.get('to_path')
-        self.download_images = kwargs.get('download_images')
-        self.download_annotations = kwargs.get('download_annotations')
-        self.use_rle = kwargs.get('use_rle')
+        self.dataset = dataset
+        self.to_path = to_path
+        self.download_images = download_images
+        self.download_annotations = download_annotations
+        self.use_rle = use_rle
 
+        kwargs = dict()
         return await self.on_dataset_end(
             **await self.on_dataset(
                 **await self.on_dataset_start(**kwargs)
