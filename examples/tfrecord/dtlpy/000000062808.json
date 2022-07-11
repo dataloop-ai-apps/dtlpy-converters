@@ -1,0 +1,536 @@
+{
+  "id": "5f4d13ebf472a966fe57acf5",
+  "datasetId": "5f4d13ba4a958a49a7747cd9",
+  "url": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+  "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+  "createdAt": "2020-08-31T15:14:51.000Z",
+  "dir": "/items",
+  "filename": "/items/000000062808.jpg",
+  "type": "file",
+  "hidden": false,
+  "metadata": {
+    "system": {
+      "originalname": "file",
+      "size": 229221,
+      "encoding": "7bit",
+      "mimetype": "image/jpeg",
+      "annotationStatus": [],
+      "refs": [],
+      "executionLogs": {
+        "image-metadata-extractor": {
+          "default_module": {
+            "run": {
+              "5f4d13ebf279b77a8c5d6429": {
+                "progress": 100,
+                "status": "success"
+              }
+            }
+          }
+        }
+      },
+      "exif": {},
+      "height": 481,
+      "width": 640,
+      "isBinary": true,
+      "taskStatusLog": []
+    }
+  },
+  "name": "000000062808.jpg",
+  "creator": "or@dataloop.ai",
+  "stream": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5/stream",
+  "thumbnail": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5/thumbnail",
+  "annotations": [
+    {
+      "id": "5f4d13ee47e8e05417594f4e",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e05417594f4e",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "person",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 11.99,
+          "z": 0,
+          "x": 3.24
+        },
+        {
+          "y": 398.08,
+          "z": 0,
+          "x": 275.01
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204063717
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.960Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.620Z",
+      "hash": "d0c3bca01af16bf23ffc2558e9dd8554c52758e7",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e09c0b594f3a",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e09c0b594f3a",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "chair",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 192.61,
+          "z": 0,
+          "x": 319.48
+        },
+        {
+          "y": 234.92000000000002,
+          "z": 0,
+          "x": 387.62
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204063788
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.955Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.620Z",
+      "hash": "c785b38ca5b6b2c7fd4325e1f49b48103ed26669",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e017a1594f3e",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e017a1594f3e",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "chair",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 184.8,
+          "z": 0,
+          "x": 237.73
+        },
+        {
+          "y": 236.17000000000002,
+          "z": 0,
+          "x": 290.49
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064909
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.956Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.620Z",
+      "hash": "493a057b08411369521c75aba30d43e12a97906b",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e08383594f36",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e08383594f36",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "knife",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 273.98,
+          "z": 0,
+          "x": 488.97
+        },
+        {
+          "y": 325,
+          "z": 0,
+          "x": 576.2
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064857
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.954Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.621Z",
+      "hash": "74e8967ccd9dee64cfcbe46a204be8722ff0707f",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e07921594f40",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e07921594f40",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "bottle",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 168.85,
+          "z": 0,
+          "x": 239.83
+        },
+        {
+          "y": 199.67,
+          "z": 0,
+          "x": 252.72000000000003
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064878
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.957Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.621Z",
+      "hash": "0bfec0a5f44bd8c069258654a01f45217c82b8e8",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e004f2594f38",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e004f2594f38",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "person",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 6.21,
+          "z": 0,
+          "x": 358.09
+        },
+        {
+          "y": 391.63,
+          "z": 0,
+          "x": 640
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064829
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.955Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.621Z",
+      "hash": "b3ee913bf61629d13de56f0a19e1f496cbe02ff3",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e02194594f46",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e02194594f46",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "cell phone",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 110.9,
+          "z": 0,
+          "x": 474.82
+        },
+        {
+          "y": 155.52,
+          "z": 0,
+          "x": 564.06
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064830
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.958Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.621Z",
+      "hash": "719e4693bdf90b437c6a922a74264ac07ee7c830",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e0eec1594f50",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e0eec1594f50",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "knife",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 432.79,
+          "z": 0,
+          "x": 464.75
+        },
+        {
+          "y": 476.13,
+          "z": 0,
+          "x": 640
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064913
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.961Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.621Z",
+      "hash": "8614443067b361885ca9dbeee6f612c1c38cca65",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e00bae594f42",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e00bae594f42",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "dining table",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 196.33,
+          "z": 0,
+          "x": 285.96
+        },
+        {
+          "y": 210.71,
+          "z": 0,
+          "x": 321.25
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064900
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.957Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.622Z",
+      "hash": "0a639b6c78c3e4c2123d549ba6a388d0a340cb43",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e021bc594f44",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e021bc594f44",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "dining table",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 235.83,
+          "z": 0,
+          "x": 258.53
+        },
+        {
+          "y": 272.66,
+          "z": 0,
+          "x": 363.64
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064916
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.958Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.622Z",
+      "hash": "9767786921fd73d4b5d125f8e397e60505026d8d",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e09fd9594f3c",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e09fd9594f3c",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "pizza",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 273.93,
+          "z": 0,
+          "x": 133.13
+        },
+        {
+          "y": 427.46000000000004,
+          "z": 0,
+          "x": 509.99
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064843
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.956Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.622Z",
+      "hash": "21d13f527b79f1a5a355f6b5ef2e39fa93b6ae96",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e03ac9594f4a",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e03ac9594f4a",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "dining table",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 184.07,
+          "z": 0,
+          "x": 378.5
+        },
+        {
+          "y": 191.1,
+          "z": 0,
+          "x": 399.12
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064851
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.959Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.623Z",
+      "hash": "4f9ddd01e21c43c9d28aad8efcf00ead6ff746cb",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e0e634594f4c",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e0e634594f4c",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "person",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 128.89,
+          "z": 0,
+          "x": 315.67
+        },
+        {
+          "y": 159.11999999999998,
+          "z": 0,
+          "x": 344.45000000000005
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064860
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.960Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.623Z",
+      "hash": "dc4c071dc310857d6b589295add6d85f39359f60",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ee47e8e047fd594f48",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13ebf472a966fe57acf5",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ee47e8e047fd594f48",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13ebf472a966fe57acf5",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "dining table",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 385.88,
+          "z": 0,
+          "x": 102.69
+        },
+        {
+          "y": 473.43,
+          "z": 0,
+          "x": 639.8900000000001
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204064901
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:54.959Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:14:07.623Z",
+      "hash": "30fdea4e00b8667df53693e8035f8d957cf3f738",
+      "source": "unknown"
+    }
+  ],
+  "annotationsCount": 14,
+  "annotated": true
+}

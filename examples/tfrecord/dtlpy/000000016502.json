@@ -1,0 +1,81 @@
+{
+  "id": "5f4d13e5cb9b9652e7158460",
+  "datasetId": "5f4d13ba4a958a49a7747cd9",
+  "url": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e5cb9b9652e7158460",
+  "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+  "createdAt": "2020-08-31T15:14:45.000Z",
+  "dir": "/items",
+  "filename": "/items/000000016502.jpg",
+  "type": "file",
+  "hidden": false,
+  "metadata": {
+    "system": {
+      "originalname": "file",
+      "size": 89819,
+      "encoding": "7bit",
+      "mimetype": "image/jpeg",
+      "annotationStatus": [],
+      "refs": [],
+      "executionLogs": {
+        "image-metadata-extractor": {
+          "default_module": {
+            "run": {
+              "5f4d13e5a441b2fce249fff2": {
+                "progress": 100,
+                "status": "success"
+              }
+            }
+          }
+        }
+      },
+      "exif": {},
+      "height": 500,
+      "width": 375,
+      "isBinary": true,
+      "taskStatusLog": []
+    }
+  },
+  "name": "000000016502.jpg",
+  "creator": "or@dataloop.ai",
+  "stream": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e5cb9b9652e7158460/stream",
+  "thumbnail": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e5cb9b9652e7158460/thumbnail",
+  "annotations": [
+    {
+      "id": "5f4d13e9bf51fc1e2d44755d",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13e5cb9b9652e7158460",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13e9bf51fc1e2d44755d",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e5cb9b9652e7158460",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "sheep",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 237.91,
+          "z": 0,
+          "x": 75.23
+        },
+        {
+          "y": 314.87,
+          "z": 0,
+          "x": 183.65
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204024066
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:49.229Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:13:27.093Z",
+      "hash": "d64fb468ec36f00103a7402fd1f94ba6b4902b33",
+      "source": "unknown"
+    }
+  ],
+  "annotationsCount": 1,
+  "annotated": true
+}
