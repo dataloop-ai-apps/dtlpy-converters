@@ -1,10 +1,11 @@
 # Converters
 
-This is a Dataloop App for three global converters:
+This is a Dataloop App for four global converters:
 
 1. COCO
-1. YOLO
-1. VOC
+2. YOLO
+3. VOC
+4. Custom
 
 ## How This Works
 
@@ -125,6 +126,58 @@ loop.run_until_complete(conv.convert_dataset(annotations_path=annotations_path,
                                              with_upload=True,
                                              with_items=True,
                                              dataset=dataset))
+```
+### Dataloop to Custom CSV:
+Dataloop supports creating a Custom csv file from a csv template.
+Template example:
+
+``` json
+{
+    "output": "csv",
+    "level": "dataset",
+    "template": {
+        "Project Name": "project.name",
+        "Project ID": "project.id",
+        "Dataset Name": "dataset.name",
+        "Dataset ID": "dataset.id",
+        "Item Name": "item.name",
+        "Item ID": "item.id",
+        "Item Dimensions": "'{}-{}'.format(item.width,item.height)",
+        "Item Size": "item.width*item.height",
+        "Annotation ID": "annotation.id",
+        "Annotation Label": "annotation.label",
+		"Frame Label": "frame.label"
+    }
+}
+```
+`output`: The type of the output file - for now only csv is supported.
+
+`level`: file per dataset/item.
+
+`template`: each `key` in `template` refers to the column name,
+            each `value` in `template` is a python command that will be evaluated. 
+
+```python            
+import dtlpy as dl
+from dataloop.converters.custom import DataloopToCustomConverter
+import asyncio
+
+
+def test_dtlpy_to_custom():
+    if dl.token_expired():
+        dl.login()
+
+    dataset = dl.datasets.get(dataset_id='61daebc07266c0aa07f94f1d')
+    json_input_path = r"../examples/custom/json_input_templates/csv_example.json"
+    local_annotation_path = r'../examples/custom/annotations'
+    csv_file_path = r'../examples/custom/output'
+
+    conv = DataloopToCustomConverter()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(conv.convert_dataset(dataset=dataset,
+                                                 json_input=json_input_path,
+                                                 local_path=local_annotation_path,
+                                                 csv_file_path=csv_file_path))
 ```
 
 ## Run Tests
