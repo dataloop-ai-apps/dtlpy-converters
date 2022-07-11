@@ -27,13 +27,11 @@ class TestCoco(unittest.TestCase):
         project = dl.projects.get('test-converters-app')
         dataset = project.datasets.get('clone-test-coco-converters')
         to_path = '../tmp/coco'
-        local_path = r'../coco_annotation_path'
         conv = DataloopToCoco()
         loop = asyncio.get_event_loop()
         loop.run_until_complete(conv.convert_dataset(to_path=to_path,
                                                      download_images=False,
                                                      download_annotations=True,
-                                                     local_path=local_path,
                                                      dataset=dataset))
         # self.assertEqual()
 
