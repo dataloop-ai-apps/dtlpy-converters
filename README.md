@@ -67,6 +67,40 @@ loop.run_until_complete(conv.convert_dataset(to_path=to_path,
                                              dataset=dataset))
 ```
 
+#### Read COCO Annotations
+
+The best way to use the coco.json output is with
+the [pycocotools](https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools) library.  
+Here's an example of how to convert [RLE](https://en.wikipedia.org/wiki/Run-length_encoding) segmentations annotations and show them using matplotlib.  
+We recommend using the [COCO API](https://github.com/cocodataset/cocoapi) for any COCO
+related use-cases.
+
+```python
+from pycocotools.coco import COCO
+import matplotlib.pyplot as plt
+
+annFile = "/path/to/coco.json"
+# initialize COCO api for instance annotations
+coco = COCO(annFile)
+# display COCO categories and supercategories
+cats = coco.loadCats(coco.getCatIds())
+print(cats)
+
+# get an image (first image in the list)
+img_ids = coco.getImgIds(list(coco.imgs.keys())[0])
+# get the image's annotations
+anns = coco.imgToAnns[img_ids[0]]
+
+# show the mask RLE annotations
+for ann in anns:
+    if 'segmentation' in ann and isinstance(ann['segmentation'], dict):
+        label = coco.loadCats(ann['category_id'])[0]
+        plt.figure()
+        plt.imshow(coco.annToMask(ann))
+        plt.title(label=label['name'])
+
+```
+
 ## VOC to Dataloop
 
 We have a small (10 images) VOC dataset sample to convert and upload to the Dataloop platform:
