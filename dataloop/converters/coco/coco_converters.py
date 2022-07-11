@@ -172,7 +172,9 @@ class DataloopToCoco(BaseConverter):
         final_json = {'annotations': list(self.annotations.values()),
                       'categories': list(self.categories.values()),
                       'images': list(self.images.values())}
-        with open(self.to_path, 'w') as f:
+
+        os.makedirs(self.to_path, exist_ok=True)
+        with open(os.path.join(self.to_path, "coco.json"), 'w') as f:
             json.dump(final_json, f, indent=2)
 
     async def on_item(self, **kwargs):
