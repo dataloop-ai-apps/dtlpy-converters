@@ -2,8 +2,6 @@
 # This file is part of Dataloop
 
 from setuptools import setup, find_packages
-import pathlib
-import os
 
 with open('README.md') as f:
     readme = f.read()

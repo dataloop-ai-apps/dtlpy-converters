@@ -105,20 +105,33 @@ class DataloopToCoco(BaseConverter):
 
         return categories
 
-    async def convert_dataset(self, dataset, to_path, download_annotations=True, download_images=False, use_rle=True):
+    async def convert_dataset(self,
+                              dataset: dl.Dataset,
+                              output_annotations_path,
+                              input_annotations_path=None,
+                              filters: dl.Filters = None,
+                              download_annotations=True,
+                              download_images=False,
+                              use_rle=True):
         """
-        Convert Dataloop Dataset annotation to COCO format
+        Convert Dataloop Dataset annotation to COCO format.
 
         :param dataset: dl.Dataset entity to convert
-        :param to_path: where to save the converted annotation
+        :param output_annotations_path: where to save the converted annotations json
+        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param filters: dl.Filters object to filter the items from dataset
         :param download_images: download the images with the converted annotations
         :param download_annotations: download annotations from Dataloop or use local
         :param use_rle: convert both segmentation and polygons to RLE encoding.
             if None - default for segmentation is RLE default for polygon is coordinates list
         :return:
         """
+        if input_annotations_path is None:
+            input_annotations_path = output_annotations_path
         self.dataset = dataset
-        self.to_path = to_path
+        self.output_annotations_path = output_annotations_path
+        self.input_annotations_path = input_annotations_path
+        self.filters = filters
         self.download_images = download_images
         self.download_annotations = download_annotations
         self.use_rle = use_rle
@@ -137,10 +150,11 @@ class DataloopToCoco(BaseConverter):
         """
 
         if self.download_annotations:
-            self.dataset.download_annotations(local_path=self.to_path)
-            json_path = Path(self.to_path).joinpath('json')
+            self.dataset.download_annotations(local_path=self.input_annotations_path,
+                                              filters=self.filters)
+            json_path = Path(self.input_annotations_path).joinpath('json')
         else:
-            json_path = Path(self.to_path)
+            json_path = Path(self.input_annotations_path)
         files = list(json_path.rglob('*.json'))
         self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.dataset.instance_map,
                                                                                 self.dataset.recipes.list()[0])}
@@ -173,8 +187,8 @@ class DataloopToCoco(BaseConverter):
                       'categories': list(self.categories.values()),
                       'images': list(self.images.values())}
 
-        os.makedirs(self.to_path, exist_ok=True)
-        with open(os.path.join(self.to_path, "coco.json"), 'w') as f:
+        os.makedirs(self.output_annotations_path, exist_ok=True)
+        with open(os.path.join(self.output_annotations_path, "coco.json"), 'w') as f:
             json.dump(final_json, f, indent=2)
 
     async def on_item(self, **kwargs):

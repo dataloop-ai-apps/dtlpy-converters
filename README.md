@@ -7,6 +7,15 @@ This is a Dataloop App for four global converters:
 3. VOC
 4. Custom
 
+## Installation
+
+Note! This repo is still under construction.
+Install directly from git:
+
+```shell
+pip install git+https://github.com/dataloop-ai/dtlpy-converters
+```
+
 ## How This Works
 
 The base class has the following methods for dataset, item and annotation:
@@ -39,16 +48,17 @@ import dtlpy as dl
 from dataloop.converters import coco
 
 dataset = dl.datasets.get(dataset_id='62826b8e721d779169f840fe')
-local_path = '/home/beethoven/jsons'
-to_path = '/home/beethoven/coco_file.json'
+input_annotations_path = '/home/beethoven/jsons'
+output_annotations_path = '/home/beethoven/coco_file.json'
 
 conv = coco.DataloopToCoco()
 loop = asyncio.get_event_loop()
-loop.run_until_complete(conv.convert_dataset(to_path=to_path,
+loop.run_until_complete(conv.convert_dataset(dataset=dataset,
+                                             output_annotations_path=output_annotations_path,
+                                             input_annotations_path=input_annotations_path,
                                              download_images=False,
-                                             download_annotations=True,
-                                             local_path=local_path,
-                                             dataset=dataset))
+                                             download_annotations=False,  # this will use local files only
+                                             ))
 
 ```
 
@@ -61,18 +71,19 @@ class WhaaaConverter(coco.DataloopToCoco):
 
 
 conv = WhaaaConverter()
-loop.run_until_complete(conv.convert_dataset(to_path=to_path,
+loop.run_until_complete(conv.convert_dataset(dataset=dataset,
+                                             output_annotations_path=output_annotations_path,
+                                             input_annotations_path=input_annotations_path,
                                              download_images=False,
-                                             download_annotations=True,
-                                             local_path=local_path,
-                                             dataset=dataset))
+                                             download_annotations=False))
 ```
 
 #### Read COCO Annotations
 
 The best way to use the coco.json output is with
 the [pycocotools](https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools) library.  
-Here's an example of how to convert [RLE](https://en.wikipedia.org/wiki/Run-length_encoding) segmentations annotations and show them using matplotlib.  
+Here's an example of how to convert [RLE](https://en.wikipedia.org/wiki/Run-length_encoding) segmentations annotations
+and show them using matplotlib.  
 We recommend using the [COCO API](https://github.com/cocodataset/cocoapi) for any COCO
 related use-cases.
 
@@ -127,7 +138,9 @@ loop.run_until_complete(conv.convert_dataset(annotations_path=annotations_path,
                                              with_items=True,
                                              dataset=dataset))
 ```
+
 ### Dataloop to Custom CSV:
+
 Dataloop supports creating a Custom csv file from a csv template.
 Template example:
 
@@ -150,12 +163,13 @@ Template example:
     }
 }
 ```
+
 `output`: The type of the output file - for now only csv is supported.
 
 `level`: file per dataset/item.
 
 `template`: each `key` in `template` refers to the column name,
-            each `value` in `template` is a python command that will be evaluated. 
+each `value` in `template` is a python command that will be evaluated.
 
 ```python            
 import dtlpy as dl

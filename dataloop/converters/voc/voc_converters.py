@@ -36,7 +36,7 @@ class DataloopToVoc(BaseConverter):
     async def on_dataset(self, **kwargs):
         """
         Callback to tun the conversion on a dataset.
-        Will be called after on_dataset_start and before on_dataset_end
+        Will be called after on_dataset_start and before on_dataset_end.
 
         :param dataset:
         :param with_download:
