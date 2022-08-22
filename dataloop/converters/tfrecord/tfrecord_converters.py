@@ -9,7 +9,7 @@ import os
 
 from pathlib import Path
 
-from ..base import BaseConverter
+from ..base import BaseExportConverter, BaseImportConverter
 
 logger = logging.getLogger(__name__)
 
@@ -95,43 +95,45 @@ class TFRecordUtils:
         return tf.io.parse_single_example(example_proto, feature_description)
 
 
-class DataloopToTFRecord(BaseConverter):
-    def __init__(self, concurrency=6, return_error_filepath=False):
+class DataloopToTFRecord(BaseExportConverter):
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 output_annotations_path,
+                 output_items_path=None,
+                 input_annotations_path=None,
+                 filters: dl.Filters = None,
+                 download_annotations=True,
+                 download_items=False,
+                 concurrency=6,
+                 return_error_filepath=False):
         """
-        Dataloop to COCO converter instance
-        :param concurrency:
-        :param return_error_filepath:
-
-
-        """
-        super(DataloopToTFRecord, self).__init__(concurrency=concurrency,
-                                                 return_error_filepath=return_error_filepath)
-
-    async def convert_dataset(self,
-                              dataset,
-                              to_path,
-                              from_path,
-                              images_path,
-                              download_binaries=True,
-                              download_annotations=True):
-        """
-        Convert Dataloop Dataset annotation to COCO format
+        Convert Dataloop Dataset to TFRecord.
 
         :param dataset: dl.Dataset entity to convert
-        :param to_path: where to save the converted annotation
-        :param from_path: download Dataloop annotation (or use existing) from this path
-        :param images_path: download Dataloop items (or use existing) from this path
-        :param download_binaries: download the images with the converted annotations
+        :param output_annotations_path: where to save the converted annotations json
+        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param filters: dl.Filters object to filter the items from dataset
+        :param download_items: download the images with the converted annotations
         :param download_annotations: download annotations from Dataloop or use local
         :return:
         """
-        self.dataset = dataset
-        self.download_binaries = download_binaries
-        self.download_annotations = download_annotations
-        self.from_path = from_path
-        self.to_path = to_path
-        self.images_path = images_path
+        super(DataloopToTFRecord, self).__init__(
+            dataset=dataset,
+            output_items_path=output_items_path,
+            output_annotations_path=output_annotations_path,
+            input_annotations_path=input_annotations_path,
+            filters=filters,
+            download_annotations=download_annotations,
+            download_items=download_items,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
+    async def convert_dataset(self):
+        """
+        Convert Dataloop Dataset annotation to COCO format
+        :return:
+        """
         kwargs = dict()
         return await self.on_dataset_end(
             **await self.on_dataset(
@@ -143,24 +145,19 @@ class DataloopToTFRecord(BaseConverter):
         """
         Callback to tun the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end
-
-        :param dataset:
-        :param with_download:
-        :param local_path:
-        :param to_path:
         """
         if self.download_annotations:
-            _ = self.dataset.download_annotations(local_path=self.from_path)
-            self.from_path = Path(self.from_path).joinpath('json')
+            _ = self.dataset.download_annotations(local_path=str(self.input_annotations_path))
+            self.input_annotations_path = Path(self.input_annotations_path).joinpath('json')
         else:
-            self.from_path = Path(self.from_path)
-        if self.download_binaries:
-            self.dataset.items.download(local_path=self.images_path)
-            self.images_path = Path(self.images_path).joinpath('items')
+            self.input_annotations_path = Path(self.input_annotations_path)
+        if self.download_items:
+            self.dataset.items.download(local_path=self.output_items_path)
+            self.output_items_path = Path(self.output_items_path).joinpath('items')
         else:
-            self.images_path = Path(self.images_path)
+            self.output_items_path = Path(self.output_items_path)
 
-        files = list(self.from_path.rglob('*.json'))
+        files = list(self.input_annotations_path.rglob('*.json'))
         self.pbar = tqdm.tqdm(total=len(files))
         for annotation_json_filepath in files:
             with open(annotation_json_filepath, 'r') as f:
@@ -174,8 +171,7 @@ class DataloopToTFRecord(BaseConverter):
                     **await self.on_item(
                         **await self.on_item_start(item=item,
                                                    dataset=self.dataset,
-                                                   annotations=annotations,
-                                                   images_path=self.images_path)
+                                                   annotations=annotations)
                     )
                 )
 
@@ -189,7 +185,6 @@ class DataloopToTFRecord(BaseConverter):
         """
         item: dl.Item = kwargs.get('item')
         annotations: dl.AnnotationCollection = kwargs.get('annotations')
-        images_path = kwargs.get('images_path')
         width = item.width
         height = item.height
         depth = item.metadata['system'].get('channels', 3)
@@ -198,7 +193,7 @@ class DataloopToTFRecord(BaseConverter):
             'path': item.filename,
             'filename': os.path.basename(item.filename),
             'folder': os.path.basename(os.path.dirname(item.filename)),
-            'images_path': images_path,
+            'images_path': self.output_items_path,
             'width': width,
             'height': height,
             'depth': depth,
@@ -225,7 +220,7 @@ class DataloopToTFRecord(BaseConverter):
         output_annotation = kwargs.get('output_annotation')
 
         # output filepath for tfrecord file
-        out_filepath = os.path.join(self.to_path, item.filename[1:])
+        out_filepath = os.path.join(self.output_annotations_path, item.filename[1:])
         # remove ext from output filepath
         out_filepath, ext = os.path.splitext(out_filepath)
         # add tfrecord extension
@@ -257,34 +252,34 @@ class DataloopToTFRecord(BaseConverter):
         return single_output_ann
 
 
-class TFRecordToDataloop(BaseConverter):
+class TFRecordToDataloop(BaseImportConverter):
 
-    def __init__(self, concurrency=6, return_error_filepath=False):
-        super(TFRecordToDataloop, self).__init__(concurrency=concurrency,
-                                                 return_error_filepath=return_error_filepath)
-        self.dataset = None
-        self.concurrency = concurrency
-        self.return_error_filepath = return_error_filepath
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 input_annotations_path,
+                 output_annotations_path=None,
+                 input_items_path=None,
+                 upload_items=False,
+                 add_labels_to_recipe=True,
+                 concurrency=6,
+                 return_error_filepath=False):
+        super(TFRecordToDataloop, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            input_annotations_path=input_annotations_path,
+            input_items_path=input_items_path,
+            upload_items=upload_items,
+            add_labels_to_recipe=add_labels_to_recipe,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
-    async def convert_dataset(self, dataset,
-                              annotations_path,
-                              images_path,
-                              add_to_recipe=True,
-                              with_upload=True,
-                              with_items=True):
-        """
-
-        """
-        self.annotations_path = annotations_path
-        self.images_path = images_path
-        self.with_upload = with_upload
-        self.with_items = with_items
-        self.dataset = dataset
-        tfrecord_files = list(Path(self.annotations_path).rglob('*.tfrecord'))
+    async def convert_dataset(self):
+        tfrecord_files = list(Path(self.input_annotations_path).rglob('*.tfrecord'))
         self.pbar = tqdm.tqdm(total=len(tfrecord_files))
         for annotation_tfrecord_filepath in tfrecord_files:
-            filename = annotation_tfrecord_filepath.relative_to(self.annotations_path)
-            img_filepath = list(Path(self.images_path).glob(str(filename.with_suffix('.*'))))
+            filename = annotation_tfrecord_filepath.relative_to(self.input_annotations_path)
+            img_filepath = list(Path(self.input_items_path).glob(str(filename.with_suffix('.*'))))
             if len(img_filepath) > 1:
                 raise ValueError(f'more than one image file with same name: {img_filepath}')
             elif len(img_filepath) == 0:
@@ -299,8 +294,8 @@ class TFRecordToDataloop(BaseConverter):
         ann_filepath = kwargs.get('ann_filepath')
 
         # platform path
-        remote_filepath = '/' + os.path.relpath(img_filepath, self.images_path)
-        if self.with_upload:
+        remote_filepath = '/' + os.path.relpath(img_filepath, self.input_items_path)
+        if self.upload_items:
             item = self.dataset.items.upload(img_filepath,
                                              remote_path=os.path.dirname(remote_filepath))
         else:
@@ -328,12 +323,9 @@ class TFRecordToDataloop(BaseConverter):
         tfrecord_annotation['height'] = int.from_bytes(tfrecord_annotation['height'].tobytes(), sys.byteorder)
         annotation_collection = item.annotations.builder()
         for index in range(len(tfrecord_annotation['bboxes'])):
-            out_args = await self.on_annotation_end(
-                **await self.on_annotation(
-                    **await self.on_annotation_start(**{'item': item,
-                                                        'tfrecord_annotation': tfrecord_annotation,
-                                                        'index': index})
-                ))
+            out_args = await self.on_annotation(**{'item': item,
+                                                   'tfrecord_annotation': tfrecord_annotation,
+                                                   'index': index})
 
             annotation_collection.annotations.append(out_args.get('dtlpy_ann'))
         item.annotations.upload(annotation_collection)

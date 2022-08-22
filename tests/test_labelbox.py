@@ -20,15 +20,14 @@ class TestLabelbox(unittest.TestCase):
         cls.dataset.delete(True, True)
 
     def test_1_labelbox_to_dtlpy(self):
-        labelbox_annotations_path = '../examples/labelbox'
+        labelbox_annotations_path = 'examples/labelbox'
         add_to_recipe = True
 
-        conv = LabelBoxToDataloop()
+        conv = LabelBoxToDataloop(input_annotations_path=labelbox_annotations_path,
+                                  upload_items=True,
+                                  dataset=self.dataset)
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(conv.convert_dataset(annotations_path=labelbox_annotations_path,
-                                                     # add_to_recipe=add_to_recipe,
-                                                     upload_images=True,
-                                                     dataset=self.dataset))
+        loop.run_until_complete(conv.convert_dataset())
         # self.assertEqual()
 
 

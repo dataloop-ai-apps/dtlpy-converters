@@ -7,27 +7,50 @@ import tqdm
 import json
 import os
 
-from ..base import BaseConverter
+from ..base import BaseExportConverter, BaseImportConverter
 
 logger = logging.getLogger(__name__)
 
 
-class DataloopToVoc(BaseConverter):
-    def __init__(self, concurrency=6, return_error_filepath=False):
+class DataloopToVoc(BaseExportConverter):
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 output_annotations_path,
+                 input_annotations_path=None,
+                 output_items_path=None,
+                 filters: dl.Filters = None,
+                 download_annotations=True,
+                 download_items=False,
+                 concurrency=6,
+                 return_error_filepath=False):
         """
-        Dataloop to COCO converter instance
-        :param concurrency:
-        :param return_error_filepath:
+        Convert Dataloop Dataset annotation to COCO format.
 
-
+        :param dataset: dl.Dataset entity to convert
+        :param output_annotations_path: where to save the converted annotations json
+        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param filters: dl.Filters object to filter the items from dataset
+        :param download_items: download the images with the converted annotations
+        :param download_annotations: download annotations from Dataloop or use local
+        :return:
         """
-        super(DataloopToVoc, self).__init__(concurrency=concurrency,
-                                            return_error_filepath=return_error_filepath)
+        # global vars
+        super(DataloopToVoc, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            output_items_path=output_items_path,
+            input_annotations_path=input_annotations_path,
+            filters=filters,
+            download_annotations=download_annotations,
+            download_items=download_items,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
         # specific for voc
         labels = dict()
         # annotations template
-        environment = Environment(loader=PackageLoader('converters', 'voc'),
+        environment = Environment(loader=PackageLoader('dataloop.converters', 'voc'),
                                   keep_trailing_newline=True)
         annotation_template = environment.get_template('voc_annotation_template.xml')
         self.annotation_params = {'labels': labels,
@@ -37,27 +60,17 @@ class DataloopToVoc(BaseConverter):
         """
         Callback to tun the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
-
-        :param dataset:
-        :param with_download:
-        :param local_path:
-        :param to_path:
         """
-        download_binaries = kwargs.get('download_binaries')
-        download_annotations = kwargs.get('download_annotations')
-        dataset: dl.Dataset = kwargs.get('dataset')
-        local_path = kwargs.get('local_path')
-        to_path = kwargs.get('to_path')
-        self.to_path_anns = os.path.join(to_path, 'annotations')
-        self.to_path_masks = os.path.join(to_path, 'segmentation_class')
+        self.to_path_anns = os.path.join(self.output_annotations_path, 'annotations')
+        self.to_path_masks = os.path.join(self.output_annotations_path, 'segmentation_class')
 
-        if download_annotations:
-            local_path = dataset.download_annotations(local_path=local_path)
-            json_path = Path(local_path).joinpath('json')
+        if self.download_annotations:
+            self.input_annotations_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
+            json_path = Path(self.input_annotations_path).joinpath('json')
         else:
-            json_path = Path(local_path)
-        if download_binaries:
-            dataset.items.download(local_path=local_path)
+            json_path = Path(self.input_annotations_path)
+        if self.download_items:
+            self.dataset.items.download(local_path=self.output_items_path)
 
         files = list(json_path.rglob('*.json'))
         self.pbar = tqdm.tqdm(total=len(files))
@@ -171,29 +184,36 @@ class DataloopToVoc(BaseConverter):
         return single_output_ann
 
 
-class VocToDataloop(BaseConverter):
+class VocToDataloop(BaseImportConverter):
 
-    def __init__(self, concurrency=6, return_error_filepath=False):
-        super(VocToDataloop, self).__init__(concurrency=concurrency,
-                                            return_error_filepath=return_error_filepath)
-        self.dataset = None
-        self.concurrency = concurrency
-        self.return_error_filepath = return_error_filepath
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 input_annotations_path,
+                 output_annotations_path=None,
+                 input_items_path=None,
+                 upload_items=False,
+                 add_labels_to_recipe=True,
+                 concurrency=6,
+                 return_error_filepath=False,
+                 ):
+        # global vars
+        super(VocToDataloop, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            input_annotations_path=input_annotations_path,
+            input_items_path=input_items_path,
+            upload_items=upload_items,
+            add_labels_to_recipe=add_labels_to_recipe,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
     async def convert_dataset(self, **kwargs):
-        """
-
-        """
-        self.annotations_path = kwargs.get('annotations_path')
-        self.images_path = kwargs.get('images_path')
-        self.with_upload = kwargs.get('with_upload')
-        self.with_items = kwargs.get('with_items')
-        self.dataset = kwargs.get('dataset')
-        xml_files = list(Path(self.annotations_path).rglob('*.xml'))
+        xml_files = list(Path(self.input_annotations_path).rglob('*.xml'))
         self.pbar = tqdm.tqdm(total=len(xml_files))
         for annotation_xml_filepath in xml_files:
-            filename = annotation_xml_filepath.relative_to(self.annotations_path)
-            img_filepath = list(Path(self.images_path).glob(str(filename.with_suffix('.*'))))
+            filename = annotation_xml_filepath.relative_to(self.input_annotations_path)
+            img_filepath = list(Path(self.input_items_path).glob(str(filename.with_suffix('.*'))))
             if len(img_filepath) > 1:
                 raise ValueError(f'more than one image file with same name: {img_filepath}')
             elif len(img_filepath) == 0:
@@ -207,7 +227,7 @@ class VocToDataloop(BaseConverter):
         img_filepath = kwargs.get('img_filepath')
         ann_filepath = kwargs.get('ann_filepath')
 
-        if self.with_upload:
+        if self.upload_items is True:
             if img_filepath is None:
                 logger.warning(f'could find local image for annotation file: {ann_filepath}')
                 item = self.dataset.items.get(f'/{img_filepath}')
@@ -219,17 +239,15 @@ class VocToDataloop(BaseConverter):
             voc_item = Et.parse(f)
 
         if voc_item.find('segmented') is not None and voc_item.find('segmented').text == '1':
-            logger.warning('Only BB conversion is supported in VOC 2 DATALOOP. Segmentation will be ignored. Please contact support')
+            logger.warning(
+                'Only BB conversion is supported in VOC 2 DATALOOP. Segmentation will be ignored. Please contact support')
 
         voc_annotations = [e for e in voc_item.iter('object')]
 
         annotation_collection = item.annotations.builder()
         for voc_annotation in voc_annotations:
-            out_args = await self.on_annotation_end(
-                **await self.on_annotation(
-                    **await self.on_annotation_start(**{'item': item,
-                                                        'voc_annotation': voc_annotation})
-                ))
+            out_args = await self.on_annotation(**{'item': item,
+                                                   'voc_annotation': voc_annotation})
 
             annotation_collection.annotations.append(out_args.get('dtlpy_ann'))
         item.annotations.upload(annotation_collection)

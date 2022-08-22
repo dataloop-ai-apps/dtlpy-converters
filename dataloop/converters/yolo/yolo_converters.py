@@ -7,39 +7,48 @@ import time
 import json
 import os
 
-from ..base import BaseConverter
+from ..base import BaseExportConverter, BaseImportConverter
 
 logger = logging.getLogger(name='dtlpy')
 
 
-class YoloToDataloop(BaseConverter):
+class YoloToDataloop(BaseImportConverter):
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 input_annotations_path,
+                 output_annotations_path=None,
+                 input_items_path=None,
+                 upload_items=False,
+                 add_labels_to_recipe=True,
+                 concurrency=6,
+                 return_error_filepath=False,
+                 ):
+        # global vars
+        super(YoloToDataloop, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            input_annotations_path=input_annotations_path,
+            input_items_path=input_items_path,
+            upload_items=upload_items,
+            add_labels_to_recipe=add_labels_to_recipe,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
-    async def convert_dataset(self,
-                              dataset,
-                              annotations_path,
-                              label_txt_filepath,
-                              images_path,
-                              upload_images,
-                              add_to_recipe=False):
+    async def convert_dataset(self, labels_txt_filepath):
         """
         Converting a dataset from Yolo format to Dataloop.
         """
         # inputs
-        self.annotations_path = annotations_path
-        self.label_txt_filepath = label_txt_filepath
-        self.images_path = images_path
-        self.upload_images = upload_images
-        self.add_to_recipe = add_to_recipe
-        self.dataset: dl.Dataset = dataset
-
+        self.label_txt_filepath = labels_txt_filepath
         # read labels and handle recipes
         with open(self.label_txt_filepath, 'r') as f:
             self.id_to_label_map = {i_label: label.strip() for i_label, label in enumerate(f.readlines())}
-        if self.add_to_recipe:
+        if self.add_labels_to_recipe:
             self.dataset.add_labels(label_list=list(self.id_to_label_map.values()))
 
         # read annotations files and run on items
-        files = list(Path(self.annotations_path).rglob('*.txt'))
+        files = list(Path(self.input_annotations_path).rglob('*.txt'))
         for txt_file in files:
             _ = await self.on_item(annotation_filepath=str(txt_file))
 
@@ -52,17 +61,17 @@ class YoloToDataloop(BaseConverter):
             lines = f.readlines()
 
         # find images with the same name (ignore image ext)
-        relpath = os.path.relpath(annotation_filepath, self.annotations_path)
+        relpath = os.path.relpath(annotation_filepath, self.input_annotations_path)
         filename, ext = os.path.splitext(relpath)
-        image_filepaths = list(Path(os.path.join(self.images_path)).rglob(f'{filename}.*'))
+        image_filepaths = list(Path(os.path.join(self.input_items_path)).rglob(f'{filename}.*'))
         if len(image_filepaths) != 1:
             assert AssertionError
 
         # image filepath found
         image_filename = str(image_filepaths[0])
-        remote_rel_path = os.path.relpath(image_filename, self.images_path)
+        remote_rel_path = os.path.relpath(image_filename, self.input_items_path)
         dirname = os.path.dirname(remote_rel_path)
-        if self.upload_images:
+        if self.upload_items:
             # TODO add overwrite as input arg
             item = self.dataset.items.upload(image_filename,
                                              remote_path=f'/{dirname}')
@@ -122,7 +131,7 @@ class YoloToDataloop(BaseConverter):
                                  item=item)
 
 
-class DataloopToYolo(BaseConverter):
+class DataloopToYolo(BaseExportConverter):
     """
     Annotation Converter
     """
@@ -134,19 +143,13 @@ class DataloopToYolo(BaseConverter):
         :param context:
         :return:
         """
-        # Inputs
-        dataset: dl.Dataset = context.get('dataset')
-        from_path = context.get('from_path')
-        to_path = context.get('to_path')
-
-        #
-        dataset.download_annotations(local_path=from_path)
+        from_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
         json_path = Path(from_path).joinpath('json')
         files = list(json_path.rglob('*.json'))
-        self.label_to_id_map = dataset.instance_map
-        os.makedirs(to_path, exist_ok=True)
+        self.label_to_id_map = self.dataset.instance_map
+        os.makedirs(self.output_annotations_path, exist_ok=True)
         sorted_labels = [k for k, v in sorted(self.label_to_id_map.items(), key=lambda item: item[1])]
-        with open(os.path.join(to_path, 'labels.txt'), 'w') as f:
+        with open(os.path.join(self.output_annotations_path, 'labels.txt'), 'w') as f:
             f.write('\n'.join(sorted_labels))
 
         tic = time.time()
@@ -164,7 +167,7 @@ class DataloopToYolo(BaseConverter):
                     **await self.on_item_start(item=item,
                                                dataset=self.dataset,
                                                annotations=annotations,
-                                               to_path=os.path.join(to_path, 'annotations'))
+                                               to_path=os.path.join(self.output_annotations_path, 'annotations'))
                 )
             )
         logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))

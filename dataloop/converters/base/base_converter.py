@@ -7,25 +7,40 @@ import json
 logger = logging.getLogger(name='dtlpy-converters')
 
 
-class BaseConverter:
+class BaseExportConverter:
     """
     Annotation Converter
     """
 
-    def __init__(self, concurrency=6, return_error_filepath=False):
-        self.dataset = None
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 output_annotations_path,
+                 output_items_path=None,
+                 input_annotations_path=None,
+                 filters: dl.Filters = None,
+                 download_annotations=True,
+                 download_items=False,
+                 concurrency=6,
+                 return_error_filepath=False):
+        if input_annotations_path is None:
+            input_annotations_path = output_annotations_path
+        self.dataset = dataset
+        self.output_annotations_path = output_annotations_path
+        self.input_annotations_path = input_annotations_path
+        self.filters = filters
+        self.download_items = download_items
+        self.output_items_path = output_items_path
+        self.download_annotations = download_annotations
         self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
 
     async def convert_dataset(self, **kwargs):
         """
-        :param dataset: dl.Dataset entity to convert
         :param kwargs:
         :return:
         """
-        self.dataset = kwargs.get('dataset')
         return await self.on_dataset_end(
-            ** await self.on_dataset(
+            **await self.on_dataset(
                 **await self.on_dataset_start(**kwargs)
             )
         )
@@ -37,14 +52,11 @@ class BaseConverter:
         """
 
         :param: local_path: directory to save annotations to
-        :param dataset: dl.Dataset
         :param kwargs:
         :return:
         """
-        dataset: dl.Dataset = kwargs.get('dataset')
-        local_path = kwargs.get('local_path')
-        dataset.download_annotations(local_path=local_path)
-        json_path = Path(local_path).joinpath('json')
+        path = self.dataset.download_annotations(local_path=self.input_annotations_path)
+        json_path = Path(path).joinpath('json')
         files = list(json_path.rglob('*.json'))
 
         tic = time.time()
@@ -126,3 +138,29 @@ class BaseConverter:
 
     async def on_pose(self, **kwargs):
         return kwargs
+
+
+class BaseImportConverter:
+    """
+    Annotation Converter
+    """
+
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 input_annotations_path,
+                 output_annotations_path=None,
+                 input_items_path=None,
+                 upload_items=False,
+                 add_labels_to_recipe=True,
+                 concurrency=6,
+                 return_error_filepath=False):
+        if input_annotations_path is None:
+            input_annotations_path = output_annotations_path
+        self.dataset = dataset
+        self.output_annotations_path = output_annotations_path
+        self.input_items_path = input_items_path
+        self.input_annotations_path = input_annotations_path
+        self.upload_items = upload_items
+        self.concurrency = concurrency
+        self.add_labels_to_recipe = add_labels_to_recipe
+        self.return_error_filepath = return_error_filepath

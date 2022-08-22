@@ -4,29 +4,40 @@ import logging
 import tqdm
 import json
 
-from ..base import BaseConverter
+from ..base import BaseImportConverter
 
 logger = logging.getLogger('dtlpy-converter')
 
 
-class LabelBoxToDataloop(BaseConverter):
+class LabelBoxToDataloop(BaseImportConverter):
 
-    def __init__(self, concurrency=6, return_error_filepath=False):
-        super(LabelBoxToDataloop, self).__init__(concurrency=concurrency,
-                                                 return_error_filepath=return_error_filepath)
-        self.dataset = None
-        self.upload_images = None
-        self.concurrency = concurrency
-        self.return_error_filepath = return_error_filepath
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 input_annotations_path,
+                 output_annotations_path=None,
+                 input_items_path=None,
+                 upload_items=False,
+                 add_labels_to_recipe=True,
+                 concurrency=6,
+                 return_error_filepath=False,
+                 ):
+        # global vars
+        super(LabelBoxToDataloop, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            input_annotations_path=input_annotations_path,
+            input_items_path=input_items_path,
+            upload_items=upload_items,
+            add_labels_to_recipe=add_labels_to_recipe,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
-    async def convert_dataset(self, dataset, annotations_path, upload_images=False):
+    async def convert_dataset(self):
         """
 
         """
-        self.annotations_path = annotations_path
-        self.dataset = dataset
-        self.upload_images = upload_images
-        labelbox_files = list(Path(self.annotations_path).rglob('*.json'))
+        labelbox_files = list(Path(self.input_annotations_path).rglob('*.json'))
         pbar = tqdm.tqdm(total=len(labelbox_files))
         for filepath in labelbox_files:
             with open(filepath, 'r') as f:
@@ -39,7 +50,7 @@ class LabelBoxToDataloop(BaseConverter):
         ann_data = kwargs.get('ann_data')
         label_data = ann_data['Labeled Data']
         filename = ann_data['External ID']
-        if self.upload_images:
+        if self.upload_items:
             item = self.dataset.items.upload(local_path=label_data,
                                              remote_name=filename)
         else:

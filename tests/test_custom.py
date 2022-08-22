@@ -9,9 +9,9 @@ def test_dtlpy_to_custom():
         dl.login()
 
     dataset = dl.datasets.get(dataset_id='61daebc07266c0aa07f94f1d')
-    json_input_path = r"../examples/custom/json_input_templates/csv_example.json"
-    local_annotation_path = r'../examples/custom/annotations'
-    csv_file_path = r'../examples/custom/output'
+    json_input_path = "examples/custom/json_input_templates/csv_example.json"
+    local_annotation_path = 'examples/custom/annotations'
+    csv_file_path = 'examples/custom/output'
 
     conv = DataloopToCustomConverter()
     loop = asyncio.get_event_loop()

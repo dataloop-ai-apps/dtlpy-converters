@@ -7,7 +7,7 @@ import tqdm
 import json
 import os
 
-from ..base import BaseConverter
+from ..base import BaseExportConverter, BaseImportConverter
 
 try:
     import pycocotools
@@ -55,16 +55,39 @@ class COCOUtils:
             return img
 
 
-class DataloopToCoco(BaseConverter):
-    def __init__(self, concurrency=6, return_error_filepath=False):
+class DataloopToCoco(BaseExportConverter):
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 output_annotations_path,
+                 input_annotations_path=None,
+                 filters: dl.Filters = None,
+                 download_annotations=True,
+                 download_items=False,
+                 concurrency=6,
+                 return_error_filepath=False):
         """
-        Dataloop to COCO converter instance
-        :param concurrency:
-        :param return_error_filepath:
+        Convert Dataloop Dataset annotation to COCO format.
 
-
+        :param dataset: dl.Dataset entity to convert
+        :param output_annotations_path: where to save the converted annotations json
+        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param filters: dl.Filters object to filter the items from dataset
+        :param download_items: download the images with the converted annotations
+        :param download_annotations: download annotations from Dataloop or use local
+        :return:
         """
-        super(DataloopToCoco, self).__init__(concurrency=concurrency, return_error_filepath=return_error_filepath)
+        # global vars
+        super(DataloopToCoco, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            input_annotations_path=input_annotations_path,
+            filters=filters,
+            download_annotations=download_annotations,
+            download_items=download_items,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
+        # COCO related
         self.images = dict()
         self.categories = dict()
         self.annotations = dict()
@@ -105,38 +128,14 @@ class DataloopToCoco(BaseConverter):
 
         return categories
 
-    async def convert_dataset(self,
-                              dataset: dl.Dataset,
-                              output_annotations_path,
-                              input_annotations_path=None,
-                              filters: dl.Filters = None,
-                              download_annotations=True,
-                              download_images=False,
-                              use_rle=True):
+    async def convert_dataset(self, **kwargs):
         """
         Convert Dataloop Dataset annotation to COCO format.
-
-        :param dataset: dl.Dataset entity to convert
-        :param output_annotations_path: where to save the converted annotations json
-        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
-        :param filters: dl.Filters object to filter the items from dataset
-        :param download_images: download the images with the converted annotations
-        :param download_annotations: download annotations from Dataloop or use local
         :param use_rle: convert both segmentation and polygons to RLE encoding.
             if None - default for segmentation is RLE default for polygon is coordinates list
         :return:
         """
-        if input_annotations_path is None:
-            input_annotations_path = output_annotations_path
-        self.dataset = dataset
-        self.output_annotations_path = output_annotations_path
-        self.input_annotations_path = input_annotations_path
-        self.filters = filters
-        self.download_images = download_images
-        self.download_annotations = download_annotations
-        self.use_rle = use_rle
-
-        kwargs = dict()
+        self.use_rle = kwargs.get('use_rle', True)
         return await self.on_dataset_end(
             **await self.on_dataset(
                 **await self.on_dataset_start(**kwargs)
@@ -179,10 +178,6 @@ class DataloopToCoco(BaseConverter):
         return kwargs
 
     async def on_dataset_end(self, **kwargs):
-        """
-
-        :param to_path:
-        """
         final_json = {'annotations': list(self.annotations.values()),
                       'categories': list(self.categories.values()),
                       'images': list(self.images.values())}
@@ -472,25 +467,37 @@ class DataloopToCoco(BaseConverter):
         raise Exception('Unable to convert annotation of type "class" to coco')
 
 
-class CocoToDataloop:
+class CocoToDataloop(BaseImportConverter):
 
-    def __init__(self):
-        ...
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 input_annotations_path,
+                 output_annotations_path=None,
+                 input_items_path=None,
+                 upload_items=False,
+                 add_labels_to_recipe=True,
+                 concurrency=6,
+                 return_error_filepath=False,
+                 ):
+        # global vars
+        super(CocoToDataloop, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            input_annotations_path=input_annotations_path,
+            input_items_path=input_items_path,
+            upload_items=upload_items,
+            add_labels_to_recipe=add_labels_to_recipe,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
     async def convert_dataset(self,
-                              dataset,
-                              annotation_filepath,
-                              upload_images=True,
-                              images_path=None,
                               box_only=False,
+                              coco_json_filename='coco.json',
                               to_polygon=False):
-
-        self.upload_images = upload_images
-        self.images_path = images_path
         self.box_only = box_only
         self.to_polygon = to_polygon
-        self.dataset = dataset
-        self.coco_dataset = pycocotools.coco.COCO(annotation_file=annotation_filepath)
+        self.coco_dataset = pycocotools.coco.COCO(annotation_file=os.path.join(self.input_annotations_path, coco_json_filename))
         for coco_image_id, coco_image in self.coco_dataset.imgs.items():
             await self.on_item(coco_image=coco_image)
 
@@ -500,8 +507,8 @@ class CocoToDataloop:
         filename = coco_image['file_name']
         coco_image_id = coco_image['id']
         coco_annotations = self.coco_dataset.imgToAnns[coco_image_id]
-        if self.upload_images:
-            item = self.dataset.items.upload(os.path.join(self.images_path, filename))
+        if self.upload_items:
+            item = self.dataset.items.upload(os.path.join(self.input_items_path, filename))
         else:
             item = self.dataset.items.get(f'/{filename}')
 
