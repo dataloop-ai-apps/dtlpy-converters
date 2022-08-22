@@ -249,15 +249,12 @@ class DataloopToCoco(BaseExportConverter):
             segmentation = [[]]
             if annotation.type not in ['binary', 'box', 'segment', 'pose']:
                 return
-            x = float(annotation.left)
-            y = float(annotation.top)
-            w = float(annotation.right - x)
-            h = float(annotation.bottom - y)
+
             #########
             # Pose
             pose_category = None
             for category in self.categories:
-                if annotation.coordinates.get('templateId', "") == category.get('templateId', None):
+                if annotation.coordinates.get('templateId', "") == self.categories[category].get('templateId', None):
                     pose_category = category
                     continue
             if pose_category is None:
@@ -269,7 +266,7 @@ class DataloopToCoco(BaseExportConverter):
                 raise ValueError(err)
             ordered_points = list()
             point_annotations = [ann for ann in annotations if ann.parent_id == annotation.id]
-            for pose_point in pose_category['keypoints']:
+            for pose_point in self.categories[pose_category]['keypoints']:
                 for point_annotation in point_annotations:
                     if point_annotation.label == pose_point:
                         ordered_points.append(point_annotation)
@@ -278,6 +275,7 @@ class DataloopToCoco(BaseExportConverter):
             for point in ordered_points:
                 keypoints.append(point.x)
                 keypoints.append(point.y)
+                # v=0 not labeled , v=1: labeled but not visible, and v=2: labeled and visible
                 if isinstance(point.attributes, list):
                     if 'visible' in point.attributes and \
                             ("not-visible" in point.attributes or 'not_visible' in point.attributes):
@@ -288,15 +286,23 @@ class DataloopToCoco(BaseExportConverter):
                         keypoints.append(2)
                     else:
                         keypoints.append(0)
-                else:
+                elif isinstance(point.attributes, dict):
                     list_attributes = list(point.attributes.values())
                     if 'Visible' in list_attributes:
                         keypoints.append(2)
+                    elif 'not-visible' in list_attributes or 'not_visible' in list_attributes:
+                        keypoints.append(1)
                     else:
                         keypoints.append(0)
+                else:
+                    keypoints.append(0)
             x_points = keypoints[0::3]
             y_points = keypoints[1::3]
             x0, x1, y0, y1 = np.min(x_points), np.max(x_points), np.min(y_points), np.max(y_points)
+            x = float(x0)
+            y = float(y0)
+            w = float(x1 - x)
+            h = float(y1 - y)
             area = (x1 - x0) * (y1 - y0)
             ann = dict()
             ann['bbox'] = [float(x), float(y), float(w), float(h)]
@@ -309,6 +315,7 @@ class DataloopToCoco(BaseExportConverter):
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
             self.annotations[annotation.id] = ann
+            return kwargs
 
         except Exception:
             print(traceback.format_exc())
