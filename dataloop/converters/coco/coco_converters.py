@@ -92,6 +92,22 @@ class DataloopToCoco(BaseExportConverter):
         self.categories = dict()
         self.annotations = dict()
 
+        self.pose_with_attributes = False
+
+        # For Pose:
+        # Check if Ontology works with visible/not-visible attributes for unexisting point
+        if len(dataset.ontology_ids):
+            ontology = dataset.ontologies.get(ontology_id=dataset.ontology_ids[0])
+            ontology_attributes = ontology.metadata.get("attributes", dict())
+            for attribute in ontology_attributes:
+                if isinstance(attribute, dict):
+                    for value in attribute['values']:
+                        if value == 'visible':
+                            self.pose_with_attributes = True
+                            break
+                    if self.pose_with_attributes:
+                        break
+
     @staticmethod
     def gen_coco_categories(instance_map, recipe):
         """
@@ -182,9 +198,11 @@ class DataloopToCoco(BaseExportConverter):
                       'categories': list(self.categories.values()),
                       'images': list(self.images.values())}
 
-        os.makedirs(self.output_annotations_path, exist_ok=True)
-        with open(os.path.join(self.output_annotations_path, "coco.json"), 'w') as f:
-            json.dump(final_json, f, indent=2)
+        # Generate output file only in case that there are images
+        if len(final_json['images']):
+            os.makedirs(self.output_annotations_path, exist_ok=True)
+            with open(os.path.join(self.output_annotations_path, "coco.json"), 'w') as f:
+                json.dump(final_json, f, indent=2)
 
     async def on_item(self, **kwargs):
         """
@@ -267,38 +285,57 @@ class DataloopToCoco(BaseExportConverter):
             ordered_points = list()
             point_annotations = [ann for ann in annotations if ann.parent_id == annotation.id]
             for pose_point in self.categories[pose_category]['keypoints']:
+                has_point = False
                 for point_annotation in point_annotations:
                     if point_annotation.label == pose_point:
                         ordered_points.append(point_annotation)
+                        has_point = True
                         break
+                if not has_point:
+                    missing_point = dl.Point(label=pose_point,x=0.0, y=0.0, description="missing point")
+                    ordered_points.append(missing_point)
             keypoints = list()
+            existing_keypoints = list()
             for point in ordered_points:
                 keypoints.append(point.x)
                 keypoints.append(point.y)
+                if point.description != "missing point":
+                    existing_keypoints.append(point.x)
+                    existing_keypoints.append(point.y)
+                    existing_keypoints.append(2)
                 # v=0 not labeled , v=1: labeled but not visible, and v=2: labeled and visible
-                if isinstance(point.attributes, list):
-                    if 'visible' in point.attributes and \
-                            ("not-visible" in point.attributes or 'not_visible' in point.attributes):
-                        keypoints.append(0)
-                    elif 'not-visible' in point.attributes or 'not_visible' in point.attributes:
-                        keypoints.append(1)
-                    elif 'visible' in point.attributes:
-                        keypoints.append(2)
-                    else:
-                        keypoints.append(0)
-                elif isinstance(point.attributes, dict):
-                    list_attributes = list(point.attributes.values())
-                    if 'Visible' in list_attributes:
-                        keypoints.append(2)
-                    elif 'not-visible' in list_attributes or 'not_visible' in list_attributes:
-                        keypoints.append(1)
+                if self.pose_with_attributes:
+                    if isinstance(point.attributes, list):
+                        if 'visible' in point.attributes and \
+                                ("not-visible" in point.attributes or 'not_visible' in point.attributes):
+                            keypoints.append(0)
+                        elif 'not-visible' in point.attributes or 'not_visible' in point.attributes:
+                            keypoints.append(1)
+                        elif 'visible' in point.attributes:
+                            keypoints.append(2)
+                        else:
+                            keypoints.append(0)
+                    elif isinstance(point.attributes, dict):
+                        list_attributes = list(point.attributes.values())
+                        if 'visible' in list_attributes:
+                            keypoints.append(2)
+                        elif 'not-visible' in list_attributes or 'not_visible' in list_attributes:
+                            keypoints.append(1)
+                        else:
+                            keypoints.append(0)
                     else:
                         keypoints.append(0)
                 else:
-                    keypoints.append(0)
-            x_points = keypoints[0::3]
-            y_points = keypoints[1::3]
-            x0, x1, y0, y1 = np.min(x_points), np.max(x_points), np.min(y_points), np.max(y_points)
+                    if point.description == "missing point":
+                        keypoints.append(1)
+                    else:
+                        keypoints.append(2)
+            x_points = existing_keypoints[0::3]
+            y_points = existing_keypoints[1::3]
+            try:
+                x0, x1, y0, y1 = np.min(x_points), np.max(x_points), np.min(y_points), np.max(y_points)
+            except:
+                x0 = x1 = y0 = y1 = 0
             x = float(x0)
             y = float(y0)
             w = float(x1 - x)
