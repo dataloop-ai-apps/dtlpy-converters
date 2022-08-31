@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 import dtlpy as dl
 import numpy as np
@@ -152,18 +153,14 @@ class DataloopToCoco(BaseExportConverter):
         :return:
         """
         self.use_rle = kwargs.get('use_rle', True)
-        return await self.on_dataset_end(
-            **await self.on_dataset(
-                **await self.on_dataset_start(**kwargs)
-            )
-        )
+        kwargs = await self.on_dataset(**kwargs)
 
     async def on_dataset(self, **kwargs):
         """
         Callback to tun the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end
         """
-
+        kwargs = await self.on_dataset_start(**kwargs)
         if self.download_annotations:
             self.dataset.download_annotations(local_path=self.input_annotations_path,
                                               filters=self.filters)
@@ -173,24 +170,21 @@ class DataloopToCoco(BaseExportConverter):
         files = list(json_path.rglob('*.json'))
         self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.dataset.instance_map,
                                                                                 self.dataset.recipes.list()[0])}
-
         self.pbar = tqdm.tqdm(total=len(files))
+        futures = list()
         for annotation_json_filepath in files:
             with open(annotation_json_filepath, 'r') as f:
                 data = json.load(f)
-                json_annotations = data.pop('annotations')
-                item = dl.Item.from_json(_json=data,
-                                         client_api=dl.client_api,
-                                         dataset=self.dataset)
-                annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
-                _ = await self.on_item_end(
-                    **await self.on_item(
-                        **await self.on_item_start(item=item,
-                                                   dataset=self.dataset,
-                                                   annotations=annotations)
-                    )
-                )
-
+            json_annotations = data.pop('annotations')
+            item = dl.Item.from_json(_json=data,
+                                     client_api=dl.client_api,
+                                     dataset=self.dataset)
+            annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
+            futures.append(asyncio.create_task(self.on_item(item=item,
+                                                            dataset=self.dataset,
+                                                            annotations=annotations)))
+        await asyncio.gather(*futures)
+        kwargs = await self.on_dataset_end(**kwargs)
         return kwargs
 
     async def on_dataset_end(self, **kwargs):
@@ -210,8 +204,11 @@ class DataloopToCoco(BaseExportConverter):
         :param item:
         :param annotations:
         """
+        kwargs = await self.on_item_start(**kwargs)
+
         item = kwargs.get('item')
         annotations = kwargs.get('annotations')
+        logger.debug(f'Started: {item.id}')
 
         self.images[item.id] = {'file_name': item.name,
                                 'id': item.id,
@@ -234,6 +231,8 @@ class DataloopToCoco(BaseExportConverter):
                 context = await self.on_segmentation(**context)
             context = await self.on_annotation_end(**context)
 
+        kwargs = await self.on_item_end(**kwargs)
+        logger.debug(f'Done: {item.id}')
         return kwargs
 
     async def on_item_end(self, **kwargs):
@@ -541,15 +540,19 @@ class CocoToDataloop(BaseImportConverter):
                               to_polygon=False):
         self.box_only = box_only
         self.to_polygon = to_polygon
-        self.coco_dataset = pycocotools.coco.COCO(annotation_file=os.path.join(self.input_annotations_path, coco_json_filename))
-        for coco_image_id, coco_image in self.coco_dataset.imgs.items():
-            await self.on_item(coco_image=coco_image)
+        self.coco_dataset = pycocotools.coco.COCO(
+            annotation_file=os.path.join(self.input_annotations_path, coco_json_filename))
+
+        futures = [asyncio.create_task(self.on_item(coco_image=coco_image))
+                   for coco_image_id, coco_image in self.coco_dataset.imgs.items()]
+        await asyncio.gather(*futures)
 
     async def on_item(self, **kwargs):
-        coco_image = kwargs.get('coco_image')
 
+        coco_image = kwargs.get('coco_image')
         filename = coco_image['file_name']
         coco_image_id = coco_image['id']
+        logger.debug(f'Started: {coco_image_id}')
         coco_annotations = self.coco_dataset.imgToAnns[coco_image_id]
         if self.upload_items:
             item = self.dataset.items.upload(os.path.join(self.input_items_path, filename))
@@ -560,7 +563,10 @@ class CocoToDataloop(BaseImportConverter):
         for coco_annotation in coco_annotations:
             annotation_collection.annotations.append(await self.on_annotation(item=item,
                                                                               coco_annotation=coco_annotation))
-        item.annotations.upload(annotation_collection)
+        # for async uploading
+        await item.annotations._async_upload_annotations(annotation_collection)
+        # item.annotations.upload(annotation_collection)
+        logger.debug(f'Done: {coco_image_id}')
 
     async def on_annotation(self, **kwargs):
         """

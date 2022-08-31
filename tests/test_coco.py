@@ -1,8 +1,14 @@
 import os
+import logging
 import unittest
 import asyncio
 import dtlpy as dl
 from dataloop.converters.coco import CocoToDataloop, DataloopToCoco
+
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger('dtlpy').setLevel('WARNING')
+logging.getLogger('filelock').setLevel('WARNING')
+logging.getLogger('urllib3').setLevel('WARNING')
 
 
 class TestCoco(unittest.TestCase):
@@ -29,6 +35,7 @@ class TestCoco(unittest.TestCase):
                               upload_items=True,
                               )
         loop = asyncio.get_event_loop()
+        loop.set_debug(True)
         loop.run_until_complete(conv.convert_dataset(box_only=False,
                                                      coco_json_filename=coco_json_filename,
                                                      to_polygon=False))
