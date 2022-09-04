@@ -266,10 +266,24 @@ class DataloopToCoco(BaseExportConverter):
             ordered_points = list()
             point_annotations = [ann for ann in annotations if ann.parent_id == annotation.id]
             for pose_point in self.categories[pose_category]['keypoints']:
+                ordered_point_found = False
                 for point_annotation in point_annotations:
                     if point_annotation.label == pose_point:
                         ordered_points.append(point_annotation)
+                        ordered_point_found = True
                         break
+                if not ordered_point_found:
+                    # if points doenst exists - create dummy one for order. add not-visible attribute
+                    missing_point = dl.Point(label=pose_point,
+                                             x=0.0,
+                                             y=0.0)
+                    if isinstance(missing_point.attributes, list):
+                        missing_point.attributes.append('not-visible')
+                    elif isinstance(missing_point.attributes, dict):
+                        missing_point.attributes['visibility'] = 'not-visible'
+                    else:
+                        raise ValueError('Unknown point.attributes type: {}'.format(type(missing_point.attributes)))
+                    ordered_points.append(missing_point)
             keypoints = list()
             for point in ordered_points:
                 keypoints.append(point.x)
@@ -287,7 +301,7 @@ class DataloopToCoco(BaseExportConverter):
                         keypoints.append(0)
                 elif isinstance(point.attributes, dict):
                     list_attributes = list(point.attributes.values())
-                    if 'Visible' in list_attributes:
+                    if 'visible' in list_attributes:
                         keypoints.append(2)
                     elif 'not-visible' in list_attributes or 'not_visible' in list_attributes:
                         keypoints.append(1)
@@ -295,8 +309,9 @@ class DataloopToCoco(BaseExportConverter):
                         keypoints.append(0)
                 else:
                     keypoints.append(0)
-            x_points = keypoints[0::3]
-            y_points = keypoints[1::3]
+            # get bounding box from existing points only
+            x_points = [pt.x for pt in point_annotations]
+            y_points = [pt.y for pt in point_annotations]
             x0, x1, y0, y1 = np.min(x_points), np.max(x_points), np.min(y_points), np.max(y_points)
             x = float(x0)
             y = float(y0)
