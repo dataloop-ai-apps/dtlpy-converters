@@ -214,6 +214,7 @@ class VocToDataloop(BaseImportConverter):
         for annotation_xml_filepath in xml_files:
             filename = annotation_xml_filepath.relative_to(self.input_annotations_path)
             img_filepath = list(Path(self.input_items_path).glob(str(filename.with_suffix('.*'))))
+            img_remote_path = Path(annotation_xml_filepath).name.replace('.xml', '.*')
             if len(img_filepath) > 1:
                 raise ValueError(f'more than one image file with same name: {img_filepath}')
             elif len(img_filepath) == 0:
@@ -221,20 +222,22 @@ class VocToDataloop(BaseImportConverter):
             else:
                 img_filepath = str(img_filepath[0])
             await self.on_item(img_filepath=img_filepath,
-                               ann_filepath=annotation_xml_filepath)
+                               ann_filepath=annotation_xml_filepath,
+                               remote_path=img_remote_path)
 
     async def on_item(self, **kwargs):
         img_filepath = kwargs.get('img_filepath')
         ann_filepath = kwargs.get('ann_filepath')
+        remote_path = kwargs.get('remote_path')
 
         if self.upload_items is True:
             if img_filepath is None:
                 logger.warning(f'could find local image for annotation file: {ann_filepath}')
-                item = self.dataset.items.get(f'/{img_filepath}')
+                item = self.dataset.items.get(f'/{remote_path}')
             else:
                 item = self.dataset.items.upload(img_filepath)
         else:
-            item = self.dataset.items.get(f'/{img_filepath}')
+            item = self.dataset.items.get(f'/{remote_path}')
         with open(ann_filepath, "r") as f:
             voc_item = Et.parse(f)
 
