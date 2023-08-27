@@ -281,3 +281,6 @@ pip-selfcheck.json
 # End of https://www.toptal.com/developers/gitignore/api/venv,pycharm,python
 tmp
 coco_annotation_path
+new_*
+examples/custom/json_input_templates/coco_template.xml
+examples/custom/output5/

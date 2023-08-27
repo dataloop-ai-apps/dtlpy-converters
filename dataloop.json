@@ -1,0 +1,158 @@
+{
+  "name": "dtlpy-converters",
+  "displayName": "Dataloop Converters",
+  "description": "Dataloop converters application",
+  "categories": [],
+  "source": {
+    "type": "git",
+    "repo": "https://github.com/dataloop-ai/dtlpy-converters.git",
+    "tag": "main"
+  },
+  "scope": "project",
+  "components": {
+    "modules": [
+      {
+        "name": "dtlpy-converters",
+        "entryPoint": "dataloop/services/converter_service.py",
+        "className": "DataloopConverters",
+        "initInputs": [],
+        "versions": {
+          "dtlpy": "1.80.4"
+        },
+        "functions": [
+          {
+            "name": "dataloop_to_coco",
+            "description": "Convert dataloop dataset to COCO format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "COCO Converter"
+          },
+          {
+            "name": "dataloop_to_voc",
+            "description": "Convert dataloop dataset to VOC format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "VOC Converter"
+          },
+          {
+            "name": "dataloop_to_yolo",
+            "description": "Convert dataloop dataset to YOLO format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "YOLO Converter"
+          }
+        ]
+      }
+    ],
+    "services": [
+      {
+        "name": "dtlpy-converters",
+        "moduleName": "dtlpy-converters",
+        "runtime": {
+          "podType": "highmem-m",
+          "runnerImage": "dataloop_runner-cpu/main:1.68.9.latest",
+          "numReplicas": 1,
+          "concurrency": 1,
+          "pyPackages": {},
+          "singleAgent": false,
+          "autoscaler": {
+            "type": "rabbitmq",
+            "minReplicas": 1,
+            "maxReplicas": 10,
+            "queueLength": 2
+          },
+          "preemptible": false,
+          "executionTimeout": 21600,
+          "drainTime": 600,
+          "onReset": "failed",
+          "runExecutionAsProcess": false
+        },
+        "maxAttempts": 2
+      }
+    ],
+    "slots": [
+      {
+        "moduleName": "dtlpy-converters",
+        "functionName": "dataloop_to_coco",
+        "displayName": "COCO Converter new",
+        "postAction": "download",
+        "displayScopes": [
+        {
+          "resource": "datasetQuery",
+          "filter": { },
+          "panel": "all"
+        }
+      ],
+      "displayIcon": "fas fa-exchange-alt"
+      },  {
+        "moduleName": "dtlpy-converters",
+        "functionName": "dataloop_to_voc",
+        "displayName": "YOLO Converter new",
+        "postAction": "download",
+        "displayScopes": [
+        {
+          "resource": "datasetQuery",
+          "filter": { },
+          "panel": "all"
+        }
+      ],
+      "displayIcon": "fas fa-exchange-alt"
+      },  {
+        "moduleName": "dtlpy-converters",
+        "functionName": "dataloop_to_yolo",
+        "displayName": "VOC Converter new",
+        "postAction": "download",
+        "displayScopes": [
+        {
+          "resource": "datasetQuery",
+          "filter": { },
+          "panel": "all"
+        }
+      ],
+      "displayIcon": "fas fa-exchange-alt"
+      }
+    ]
+  }
+}
