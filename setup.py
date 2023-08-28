@@ -10,7 +10,7 @@ with open('requirements.txt') as f:
     requirements = f.read()
 
 packages = [
-    package for package in find_packages() if package.startswith("dataloop")
+    package for package in find_packages() if package.startswith("dtlpy_converters")
 ]
 
 setup(name='dataloop-converter',

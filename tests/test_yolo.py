@@ -3,7 +3,7 @@ import dtlpy as dl
 import logging
 import asyncio
 
-from dataloop.converters.yolo import YoloToDataloop, DataloopToYolo
+from dtlpy_converters.yolo.yolo_converters import YoloToDataloop, DataloopToYolo
 
 logging.basicConfig(level='INFO')
 

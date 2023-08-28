@@ -1,6 +1,5 @@
-import unittest
 import dtlpy as dl
-from dataloop.converters.custom import DataloopToCustomConverter
+from dtlpy_converters.custom.custom_converters import DataloopToCustomConverter
 import asyncio
 
 

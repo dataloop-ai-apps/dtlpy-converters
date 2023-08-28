@@ -1,4 +1,3 @@
-import tensorflow as tf
 import dtlpy as dl
 import numpy as np
 import logging
@@ -12,6 +11,11 @@ from pathlib import Path
 from ..base import BaseExportConverter, BaseImportConverter
 
 logger = logging.getLogger(__name__)
+
+try:
+    import tensorflow as tf
+except ModuleNotFoundError:
+    raise Exception('To use this functionality please install pycocotools: "pip install tensorflow"')
 
 
 class TFRecordUtils:

@@ -1,11 +1,9 @@
 import os.path
 import datetime
 import dtlpy as dl
-from dataloop.converters.coco.coco_converters import DataloopToCoco
 import asyncio
 import shutil
-from dataloop.converters.voc.voc_converters import DataloopToVoc
-from dataloop.converters.yolo.yolo_converters import DataloopToYolo
+from dtlpy_converters import coco_converters, yolo_converters, voc_converters
 import zipfile
 
 
@@ -51,11 +49,11 @@ class DataloopConverters(dl.BaseServiceRunner):
 
     def dataloop_to_coco(self, dataset: dl.Dataset, query=None):
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
-        conv = DataloopToCoco(output_annotations_path=output_annotations_path,
-                              download_items=False,
-                              download_annotations=True,
-                              filters=filters,
-                              dataset=dataset)
+        conv = coco_converters.DataloopToCoco(output_annotations_path=output_annotations_path,
+                                              download_items=False,
+                                              download_annotations=True,
+                                              filters=filters,
+                                              dataset=dataset)
         output = self._convert_dataset(conv=conv,
                                        conv_type='coco',
                                        output_annotations_path=output_annotations_path,
@@ -65,11 +63,11 @@ class DataloopConverters(dl.BaseServiceRunner):
 
     def dataloop_to_yolo(self, dataset: dl.Dataset, query=None):
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
-        conv = DataloopToYolo(output_annotations_path=output_annotations_path,
-                              download_items=False,
-                              download_annotations=True,
-                              filters=filters,
-                              dataset=dataset)
+        conv = yolo_converters.DataloopToYolo(output_annotations_path=output_annotations_path,
+                                              download_items=False,
+                                              download_annotations=True,
+                                              filters=filters,
+                                              dataset=dataset)
         output = self._convert_dataset(conv=conv,
                                        conv_type='yolo',
                                        output_annotations_path=output_annotations_path,
@@ -79,11 +77,11 @@ class DataloopConverters(dl.BaseServiceRunner):
 
     def dataloop_to_voc(self, dataset: dl.Dataset, query=None):
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
-        conv = DataloopToVoc(output_annotations_path=output_annotations_path,
-                             download_items=False,
-                             download_annotations=True,
-                             filters=filters,
-                             dataset=dataset)
+        conv = voc_converters.DataloopToVoc(output_annotations_path=output_annotations_path,
+                                            download_items=False,
+                                            download_annotations=True,
+                                            filters=filters,
+                                            dataset=dataset)
         output = self._convert_dataset(conv=conv,
                                        conv_type='voc',
                                        output_annotations_path=output_annotations_path,

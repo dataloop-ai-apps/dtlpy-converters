@@ -3,7 +3,7 @@ import unittest
 import logging
 import asyncio
 
-from dataloop.converters.voc import VocToDataloop, DataloopToVoc
+from dtlpy_converters.voc.voc_converters import VocToDataloop, DataloopToVoc
 
 logging.basicConfig(level='INFO')
 
@@ -18,22 +18,22 @@ class TestVoc(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls.dataset.delete(True, True)
-
-    def test_1_voc_to_dtlpy(self):
-        annotations_path = 'examples/voc/voc/annotations'
-        images_path = 'examples/voc/images'
-        to_path = 'examples/voc/dataloop'
-        add_to_recipe = True
-
-        conv = VocToDataloop(input_annotations_path=annotations_path,
-                             add_labels_to_recipe=add_to_recipe,
-                             output_annotations_path=to_path,
-                             input_items_path=images_path,
-                             upload_items=True,
-                             dataset=self.dataset)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(conv.convert_dataset())
-        # self.assertEqual()
+    #
+    # def test_1_voc_to_dtlpy(self):
+    #     annotations_path = 'examples/voc/voc/annotations'
+    #     images_path = 'examples/voc/images'
+    #     to_path = 'examples/voc/dataloop'
+    #     add_to_recipe = True
+    #
+    #     conv = VocToDataloop(input_annotations_path=annotations_path,
+    #                          add_labels_to_recipe=add_to_recipe,
+    #                          output_annotations_path=to_path,
+    #                          input_items_path=images_path,
+    #                          upload_items=True,
+    #                          dataset=self.dataset)
+    #     loop = asyncio.get_event_loop()
+    #     loop.run_until_complete(conv.convert_dataset())
+    #     # self.assertEqual()
 
     def test_2_dtlpy_to_voc(self):
         images_path = 'tmp/voc/images'

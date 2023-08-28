@@ -18,51 +18,15 @@ pip install git+https://github.com/dataloop-ai/dtlpy-converters
 
 ## How This Works
 
-The base class has the following methods for dataset, item and annotation:
-
-* on_dataset_start
-* on_dataset
-* on_dataset_end
-* on_item_start
-* on_item
-* on_item_end
-* on_annotation
-
-For each step, the "on_{entity}\_start" will perform a pre-process before the actual "on_{entity}" run. Each "on_
-{entity}" will thread the children of the next level to create an optimal runtime. For annotations, there's a function "
-on_{annotation-type}" (e.g "on_box") to separate the conversion of each type.
-
-The following diagram demonstrate the pre/post functions and the parallelism of the conversion:
-![diagram](assets/parallel_diagram.png)
+For a technical explanation about the base code, please refer to the [Code Architecture explanation file](assets/README_dev.md).
 
 ## Examples
 
-### Dataloop to COCO
+* For an example of how to convert a Dataloop dataset to COCO, YOLO, or VOC, please refer to the [example file](examples/coco_yolo_voc/converters_example.py).
 
-Here's a short example for downloading and converting a dataset. Dataset's annotations (and images) will be downloaded
-to the `local_path` and the output file will go to `to_path`
+----
 
-```python
-import asyncio
-import dtlpy as dl
-from dataloop.converters import coco
-
-dataset = dl.datasets.get(dataset_id='62826b8e721d779169f840fe')
-input_annotations_path = '/home/beethoven/jsons'
-output_annotations_path = '/home/beethoven/coco_file.json'
-
-conv = coco.DataloopToCoco()
-loop = asyncio.get_event_loop()
-loop.run_until_complete(conv.convert_dataset(dataset=dataset,
-                                             output_annotations_path=output_annotations_path,
-                                             input_annotations_path=input_annotations_path,
-                                             download_images=False,
-                                             download_annotations=False,  # this will use local files only
-                                             ))
-
-```
-
-To add you custom callback function you can inherit from the mail class and override the methods:
+* To add you custom callback function you can inherit from the [main class](dtlpy_converters/base/base_converter.py) and override the methods:
 
 ```python
 class WhaaaConverter(coco.DataloopToCoco):
@@ -78,7 +42,9 @@ loop.run_until_complete(conv.convert_dataset(dataset=dataset,
                                              download_annotations=False))
 ```
 
-#### Read COCO Annotations
+----
+
+* Read COCO Annotations
 
 The best way to use the coco.json output is with
 the [pycocotools](https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools) library.  
@@ -112,15 +78,15 @@ for ann in anns:
         plt.title(label=label['name'])
 
 ```
-
-## VOC to Dataloop
+----
+* VOC to Dataloop
 
 We have a small (10 images) VOC dataset sample to convert and upload to the Dataloop platform:
 
 ```python
 import asyncio
 import dtlpy as dl
-from dataloop.converters.voc import VocToDataloop
+from dtlpy_converters.voc import VocToDataloop
 
 annotations_path = '../converters/voc/examples/voc/annotations'
 images_path = '../converters/voc/examples/images'
@@ -195,12 +161,13 @@ def test_dtlpy_to_custom():
 ```
 
 ## Run Tests
+Run the following command: `python -m unittest`
 
 ## Create App (Service)
+* To publish the application: `dlp app publish --project-name <PROJECT_NAME>`
+* To install the application:  `dlp app install --dpk-id <DPK ID> --project-name <PROJECT_NAME>`
 
 ## Contribute
 
 We welcome any type of contribute! For bug or feature requests please open an issue.
-
-
 

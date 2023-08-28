@@ -3,7 +3,7 @@ import logging
 import unittest
 import asyncio
 import dtlpy as dl
-from dataloop.converters.coco import CocoToDataloop, DataloopToCoco
+from dtlpy_converters.coco.coco_converters import CocoToDataloop, DataloopToCoco
 
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('dtlpy').setLevel('WARNING')
