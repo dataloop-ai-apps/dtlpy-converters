@@ -3,10 +3,10 @@
 
 from setuptools import setup, find_packages
 
-with open('README.md') as f:
+with open('../README.md') as f:
     readme = f.read()
 
-with open('requirements.txt') as f:
+with open('../requirements.txt') as f:
     requirements = f.read()
 
 packages = [
