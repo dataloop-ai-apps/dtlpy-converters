@@ -3,16 +3,16 @@
 
 from setuptools import setup, find_packages
 
-with open('../README.md') as f:
+with open('README.md') as f:
     readme = f.read()
 
-with open('../requirements.txt') as f:
+with open('requirements.txt') as f:
     requirements = f.read()
 
 packages = [
     package for package in find_packages() if package == 'dtlpy_converters']
 
-setup(name='dataloop-converter',
+setup(name='dtlpy_converters',
       classifiers=[
           'Programming Language :: Python :: 3.7',
           'Programming Language :: Python :: 3.8',
