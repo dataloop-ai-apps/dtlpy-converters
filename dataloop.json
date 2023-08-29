@@ -5,7 +5,7 @@
   "categories": [],
   "source": {
     "type": "git",
-    "repo": "https://github.com/dataloop-ai/dtlpy-converters.git",
+    "repo": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
     "tag": "main"
   },
   "scope": "project",
@@ -13,9 +13,10 @@
     "modules": [
       {
         "name": "dtlpy-converters",
-        "entryPoint": "dataloop/services/converter_service.py",
+        "entryPoint": "dtlpy_converters/services/converters_service.py",
         "className": "DataloopConverters",
-        "initInputs": [],
+        "initInputs": [
+        ],
         "versions": {
           "dtlpy": "1.80.4"
         },
@@ -39,7 +40,8 @@
                 "name": "item"
               }
             ],
-            "displayName": "COCO Converter"
+            "displayName": "COCO Converter",
+            "action": "download"
           },
           {
             "name": "dataloop_to_voc",
@@ -60,7 +62,8 @@
                 "name": "item"
               }
             ],
-            "displayName": "VOC Converter"
+            "displayName": "VOC Converter",
+            "action": "download"
           },
           {
             "name": "dataloop_to_yolo",
@@ -81,7 +84,8 @@
                 "name": "item"
               }
             ],
-            "displayName": "YOLO Converter"
+            "displayName": "YOLO Converter",
+            "action": "download"
           }
         ]
       }
@@ -92,7 +96,7 @@
         "moduleName": "dtlpy-converters",
         "runtime": {
           "podType": "highmem-m",
-          "runnerImage": "dataloop_runner-cpu/main:1.68.9.latest",
+          "runnerImage": "dataloopai/dtlpy-agent:cpu.py3.8.opencv4.7",
           "numReplicas": 1,
           "concurrency": 1,
           "pyPackages": {},
@@ -112,46 +116,33 @@
         "maxAttempts": 2
       }
     ],
-    "slots": [
+    "toolbars": [
       {
-        "moduleName": "dtlpy-converters",
-        "functionName": "dataloop_to_coco",
         "displayName": "COCO Converter new",
-        "postAction": "download",
-        "displayScopes": [
-        {
-          "resource": "datasetQuery",
-          "filter": { },
-          "panel": "all"
-        }
-      ],
-      "displayIcon": "fas fa-exchange-alt"
-      },  {
-        "moduleName": "dtlpy-converters",
-        "functionName": "dataloop_to_voc",
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_coco"
+        },
+        "location": "datasetBrowser",
+        "icon": "icon-dl-edit"
+      },
+      {
         "displayName": "YOLO Converter new",
-        "postAction": "download",
-        "displayScopes": [
-        {
-          "resource": "datasetQuery",
-          "filter": { },
-          "panel": "all"
-        }
-      ],
-      "displayIcon": "fas fa-exchange-alt"
-      },  {
-        "moduleName": "dtlpy-converters",
-        "functionName": "dataloop_to_yolo",
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_yolo"
+        },
+        "location": "datasetBrowser",
+        "icon": "icon-dl-edit"
+      },
+      {
         "displayName": "VOC Converter new",
-        "postAction": "download",
-        "displayScopes": [
-        {
-          "resource": "datasetQuery",
-          "filter": { },
-          "panel": "all"
-        }
-      ],
-      "displayIcon": "fas fa-exchange-alt"
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_voc"
+        },
+        "location": "datasetBrowser",
+        "icon": "icon-dl-edit"
       }
     ]
   }

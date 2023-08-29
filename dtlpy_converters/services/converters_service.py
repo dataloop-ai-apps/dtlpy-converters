@@ -13,12 +13,15 @@ class DataloopConverters(dl.BaseServiceRunner):
 
     @staticmethod
     def _zip_folder(folder_path, output_path):
-        with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for root, _, files in os.walk(folder_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arc_name = os.path.relpath(file_path, folder_path)
-                    zipf.write(file_path, arc_name)
+        try:
+            with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for root, _, files in os.walk(folder_path):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arc_name = os.path.relpath(file_path, folder_path)
+                        zipf.write(file_path, arc_name)
+        except Exception as e:
+            raise e
 
     @staticmethod
     def _gen_converter_inputs(query):
@@ -32,20 +35,32 @@ class DataloopConverters(dl.BaseServiceRunner):
         return filters, timestamp, output_annotations_path, input_annotations_path
 
     def _convert_dataset(self, conv, conv_type, output_annotations_path, timestamp, input_annotations_path):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(conv.convert_dataset())
-        zip_path = os.path.join(os.getcwd(), '{}_{}.zip'.format(conv_type, timestamp))
-        self._zip_folder(folder_path=output_annotations_path, output_path=zip_path)
-        item = conv.dataset.items.upload(local_path=zip_path,
-                                         remote_path='/.dataloop/{}'.format(conv_type))
+        zip_path = ''
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError as e:
+            if "no current event loop" in str(e):
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            else:
+                raise e
+        try:
+            loop.run_until_complete(conv.convert_dataset())
+            zip_path = os.path.join(os.getcwd(), '{}_{}.zip'.format(conv_type, timestamp))
+            self._zip_folder(folder_path=output_annotations_path, output_path=zip_path)
+            item = conv.dataset.items.upload(local_path=zip_path,
+                                             remote_path='/.dataloop/{}'.format(conv_type))
 
-        if os.path.exists(output_annotations_path):
-            shutil.rmtree(output_annotations_path)
-        if os.path.exists(input_annotations_path):
-            shutil.rmtree(input_annotations_path)
-        if os.path.exists(zip_path):
-            os.remove(zip_path)
-        return item.id
+            return item.id
+        except Exception as e:
+            raise e
+        finally:
+            if os.path.exists(output_annotations_path):
+                shutil.rmtree(output_annotations_path)
+            if os.path.exists(input_annotations_path):
+                shutil.rmtree(input_annotations_path)
+            if os.path.exists(zip_path):
+                os.remove(zip_path)
 
     def dataloop_to_coco(self, dataset: dl.Dataset, query=None):
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
@@ -82,27 +97,12 @@ class DataloopConverters(dl.BaseServiceRunner):
                                             download_annotations=True,
                                             filters=filters,
                                             dataset=dataset)
+
         output = self._convert_dataset(conv=conv,
                                        conv_type='voc',
                                        output_annotations_path=output_annotations_path,
                                        timestamp=timestamp,
                                        input_annotations_path=input_annotations_path)
         return output
-
-
-# Run locally
-if __name__ == '__main__':
-    dataset = dl.datasets.get(dataset_id='6110d173f2428d3b2ae2dafc')
-    service = dl.services.get(service_id='64eb570567f0fa83d89ffaea')
-    service.execute(execution_input={'dataset': dataset.id},
-                    function_name='dataloop_to_coco',
-                    project_id=dataset.project.id)
-#     dl.setenv('prod')
-#     dataset = dl.datasets.get(dataset_id='')
-#     runner = DataloopConverters()
-#     item_id = runner.dataloop_to_coco(dataset=dataset)
-#     yolo_items = runner.dataloop_to_yolo(dataset=dataset)
-#     voc_items = runner.dataloop_to_voc(dataset=dataset)
-
 
 # TODO : check coco metadata

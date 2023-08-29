@@ -1,7 +1,5 @@
 #!/bin/bash
 
-pip install --user
-
-pip install pycocotools
+pip install --user pycocotools
 
 echo "Setup complete. Virtual environment created, libraries installed"
