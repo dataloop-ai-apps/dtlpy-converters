@@ -6,7 +6,8 @@ converter = DataloopConverters()
 dataset = dl.datasets.get(dataset_id='')
 
 # DQL Query is optional
-query = {}
+filters = dl.Filters()
+query = filters.prepare()
 
 # Convert dataset to COCO
 coco_json_item_id = converter.dataloop_to_coco(dataset=dataset, query=query)

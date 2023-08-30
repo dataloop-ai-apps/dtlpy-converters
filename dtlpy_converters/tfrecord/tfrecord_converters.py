@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 try:
     import tensorflow as tf
 except ModuleNotFoundError:
-    raise Exception('To use this functionality please install tensorflow: "pip install tensorflow"')
+    raise logger.warning('To use this functionality please install tensorflow: "pip install tensorflow"')
 
 
 class TFRecordUtils:

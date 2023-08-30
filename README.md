@@ -18,7 +18,7 @@ pip install git+https://github.com/dataloop-ai/dtlpy-converters
 
 ## How This Works
 
-For a technical explanation about the base code, please refer to the [Code Architecture explanation file](assets/README_dev.md).
+For a technical explanation about the base code, please refer to the [Code Architecture explanation file](assets/code_arch.md).
 
 ## Examples
 

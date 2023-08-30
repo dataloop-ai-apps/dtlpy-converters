@@ -10,14 +10,14 @@ import os
 
 from ..base import BaseExportConverter, BaseImportConverter
 
+logger = logging.getLogger(__name__)
+
 try:
     import pycocotools
 except ModuleNotFoundError:
-    raise Exception('To use this functionality please install pycocotools: "pip install pycocotools"')
+    logger.warning('To use this functionality please install pycocotools: "pip install pycocotools"')
 import pycocotools.mask
 import pycocotools.coco
-
-logger = logging.getLogger(__name__)
 
 
 class COCOUtils:
