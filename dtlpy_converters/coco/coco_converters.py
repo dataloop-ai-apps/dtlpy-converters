@@ -513,10 +513,10 @@ class CocoToDataloop(BaseImportConverter):
         )
 
     async def convert_dataset(self,
-                              box_only=False,
+                              annotation_options=None,
                               coco_json_filename='coco.json',
                               to_polygon=False):
-        self.box_only = box_only
+        self.annotation_options = annotation_options if annotation_options is not None else [dl.AnnotationType.BOX]
         self.to_polygon = to_polygon
         self.coco_dataset = pycocotools.coco.COCO(
             annotation_file=os.path.join(self.input_annotations_path, coco_json_filename))
@@ -539,11 +539,12 @@ class CocoToDataloop(BaseImportConverter):
 
         annotation_collection = item.annotations.builder()
         for coco_annotation in coco_annotations:
-            annotation_collection.annotations.append(await self.on_annotation(item=item,
-                                                                              coco_annotation=coco_annotation))
+            new_annotation = await self.on_annotation(item=item,
+                                                      coco_annotation=coco_annotation)
+            if new_annotation is not None:
+                annotation_collection.annotations.append(new_annotation)
         # for async uploading
-        # await item.annotations._async_upload_annotations(annotation_collection)
-        item.annotations.upload(annotation_collection)
+        await item.annotations._async_upload_annotations(annotation_collection)
         logger.debug(f'Done: {coco_image_id}')
 
     async def on_annotation(self, **kwargs):
@@ -566,11 +567,12 @@ class CocoToDataloop(BaseImportConverter):
         bbox = coco_annotation.get('bbox', None)
         label = self.coco_dataset.cats[category_id]['name']
 
-        if segmentation is not None and not self.box_only:
+        ann_def = None
+        if segmentation is not None and dl.AnnotationType.SEGMENTATION in self.annotation_options:
             # upload semantic as binary or polygon
             if isinstance(segmentation, dict):
                 mask = COCOUtils.rle_to_binary_mask(segmentation)
-                if self.to_polygon:
+                if self.to_polygon is True:
                     ann_def = dl.Polygon.from_segmentation(label=label,
                                                            mask=mask)
                 else:
@@ -580,20 +582,26 @@ class CocoToDataloop(BaseImportConverter):
                 if len(segmentation) > 1:
                     logger.warning('Multiple polygons per annotation is not supported. coco annotation id: {}'.format(
                         coco_annotation_id))
+                if len(segmentation) < 1:
+                    segmentation = [[]]
+                    logger.warning(
+                        'Empty segmentation, using default: [[]]. coco annotation id: {}'.format(coco_annotation_id))
                 segmentation = np.reshape(segmentation[0], (-1, 2))
-                polygon = segmentation
-                if self.to_polygon:
+                if len(segmentation) == 0:
+                    ann_def = None
+                elif self.to_polygon is False:
                     ann_def = dl.Segmentation.from_polygon(label=label,
-                                                           geo=polygon,
+                                                           geo=segmentation,
                                                            shape=(item.height, item.width))
                 else:
                     ann_def = dl.Polygon(label=label,
-                                         geo=polygon)
+                                         geo=segmentation)
 
-        elif keypoints is not None and not self.box_only:
+        if keypoints is not None and dl.AnnotationType.POSE in self.annotation_options:
             # upload keypoints
-            raise ValueError('keypoints is not supported yet')
-        else:
+            ann_def = None
+            logger.warning('keypoints is not supported yet')
+        if ann_def is None and dl.AnnotationType.BOX in self.annotation_options:
             # upload box only
             left = bbox[0]
             top = bbox[1]
@@ -604,4 +612,7 @@ class CocoToDataloop(BaseImportConverter):
                              bottom=bottom,
                              right=right,
                              label=label)
-        return dl.Annotation.new(annotation_definition=ann_def, item=item)
+        new_ann = None
+        if ann_def is not None:
+            new_ann = dl.Annotation.new(annotation_definition=ann_def, item=item)
+        return new_ann
