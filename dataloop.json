@@ -3,10 +3,10 @@
   "displayName": "Dataloop Converters",
   "description": "Dataloop converters application",
   "categories": [],
-  "source": {
+  "codebase": {
     "type": "git",
-    "repo": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
-    "tag": "main"
+    "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
+    "gitTag": "main"
   },
   "scope": "project",
   "components": {
@@ -118,30 +118,30 @@
     ],
     "toolbars": [
       {
-        "displayName": "COCO Converter new",
+        "displayName": "COCO Converter 2.0",
         "invoke": {
           "type": "function",
           "namespace": "dtlpy-converters.dataloop_to_coco"
         },
-        "location": "datasetBrowser",
+        "location": "datasetBrowserApps",
         "icon": "icon-dl-edit"
       },
       {
-        "displayName": "YOLO Converter new",
+        "displayName": "YOLO Converter 2.0",
         "invoke": {
           "type": "function",
           "namespace": "dtlpy-converters.dataloop_to_yolo"
         },
-        "location": "datasetBrowser",
+        "location": "datasetBrowserApps",
         "icon": "icon-dl-edit"
       },
       {
-        "displayName": "VOC Converter new",
+        "displayName": "VOC Converter 2.0",
         "invoke": {
           "type": "function",
           "namespace": "dtlpy-converters.dataloop_to_voc"
         },
-        "location": "datasetBrowser",
+        "location": "datasetBrowserApps",
         "icon": "icon-dl-edit"
       }
     ]

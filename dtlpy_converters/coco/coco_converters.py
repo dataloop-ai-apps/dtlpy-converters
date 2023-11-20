@@ -542,8 +542,8 @@ class CocoToDataloop(BaseImportConverter):
             annotation_collection.annotations.append(await self.on_annotation(item=item,
                                                                               coco_annotation=coco_annotation))
         # for async uploading
-        await item.annotations._async_upload_annotations(annotation_collection)
-        # item.annotations.upload(annotation_collection)
+        # await item.annotations._async_upload_annotations(annotation_collection)
+        item.annotations.upload(annotation_collection)
         logger.debug(f'Done: {coco_image_id}')
 
     async def on_annotation(self, **kwargs):
