@@ -10,6 +10,7 @@ This is a Dataloop App for four global converters:
 ## Installation
 
 Note! This repo is still under construction.
+
 Install directly from git:
 
 ```shell
@@ -22,7 +23,17 @@ For a technical explanation about the base code, please refer to the [Code Archi
 
 ## Examples
 
-* For an example of how to convert a Dataloop dataset to COCO, YOLO, or VOC, please refer to the [example file](examples/coco_yolo_voc/converters_example.py).
+### Using the package locally:
+* [Example](examples/coco_yolo_voc/converters_example.py) of how to convert a Dataloop dataset to COCO, YOLO, or VOC please refer to the.
+* [Example](examples/coco_yolo_voc/uploaders_example.py) of how to upload a local COCO, YOLO, or VOC dataset to Dataloop.
+
+### Exporting annotations from the UI:
+- Navigate to dataset browser.
+- Select Actions button.
+- Select Applications.
+- Choose one of the converter options (2.0).
+- 
+<img src="assets/ui_toolbars.png">
 
 ----
 
@@ -78,32 +89,7 @@ for ann in anns:
         plt.title(label=label['name'])
 
 ```
-----
-* VOC to Dataloop
-
-We have a small (10 images) VOC dataset sample to convert and upload to the Dataloop platform:
-
-```python
-import asyncio
-import dtlpy as dl
-from dtlpyconverters.voc import VocToDataloop
-
-annotations_path = '../converters/voc/examples/voc/annotations'
-images_path = '../converters/voc/examples/images'
-to_path = '../converters/voc/examples/dataloop'
-add_to_recipe = True
-project = dl.projects.create('VOC project')
-dataset = project.datasets.create('VOC dataset')
-conv = VocToDataloop()
-loop = asyncio.get_event_loop()
-loop.run_until_complete(conv.convert_dataset(annotations_path=annotations_path,
-                                             add_to_recipe=add_to_recipe,
-                                             to_path=to_path,
-                                             images_path=images_path,
-                                             with_upload=True,
-                                             with_items=True,
-                                             dataset=dataset))
-```
+--- 
 
 ### Dataloop to Custom CSV:
 
@@ -162,10 +148,6 @@ def test_dtlpy_to_custom():
 
 ## Run Tests
 Run the following command: `python -m unittest`
-
-## Create App (Service)
-* To publish the application: `dlp app publish --project-name <PROJECT_NAME>`
-* To install the application:  `dlp app install --dpk-id <DPK ID> --project-name <PROJECT_NAME>`
 
 ## Contribute
 

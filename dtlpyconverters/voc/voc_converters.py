@@ -279,20 +279,10 @@ class VocToDataloop(BaseImportConverter):
         right = float(bndbox.find('xmax').text)
         label = voc_annotation.find('name').text
 
-        attributes = list(voc_annotation)
-        attrs = list()
-        for attribute in attributes:
-            if attribute.tag not in ['bndbox', 'name'] and len(list(attribute)) == 0:
-                if attribute.text not in ['0', '1']:
-                    attrs.append(attribute.text)
-                elif attribute.text == '1':
-                    attrs.append(attribute.tag)
-
         ann_def = dl.Box(label=label,
                          top=top,
                          bottom=bottom,
                          left=left,
-                         right=right,
-                         attributes=attrs)
+                         right=right)
         kwargs['dtlpy_ann'] = dl.Annotation.new(annotation_definition=ann_def, item=item)
         return kwargs

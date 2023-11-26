@@ -5,7 +5,7 @@ from dtlpyconverters import coco_converters, yolo_converters, voc_converters
 import nest_asyncio
 
 
-class DataloopConverters(dl.BaseServiceRunner):
+class ConvertersUploader(dl.BaseServiceRunner):
     def __init__(self):
         nest_asyncio.apply()
 
