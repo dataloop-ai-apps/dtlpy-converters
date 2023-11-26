@@ -3,12 +3,12 @@
   "displayName": "Dataloop Converters",
   "description": "Dataloop converters application",
   "categories": [],
-  "version": "3.0.0",
+  "version": "3.0.1",
   "scope": "system",
   "codebase": {
     "type": "git",
     "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
-    "gitTag": "3.0.0"
+    "gitTag": "3.0.1"
   },
   "components": {
     "modules": [
