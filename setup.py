@@ -10,9 +10,9 @@ with open('requirements.txt') as f:
     requirements = f.read()
 
 packages = [
-    package for package in find_packages() if package.startswith('dtlpy_converters')]
+    package for package in find_packages() if package.startswith('dtlpyconverters')]
 
-setup(name='dtlpy_converters',
+setup(name='dtlpyconverters',
       classifiers=[
           'Programming Language :: Python :: 3.8',
           'Programming Language :: Python :: 3.9',

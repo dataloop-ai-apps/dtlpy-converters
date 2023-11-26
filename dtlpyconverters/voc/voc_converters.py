@@ -50,7 +50,7 @@ class DataloopToVoc(BaseExportConverter):
         # specific for voc
         labels = dict()
         # annotations template
-        environment = Environment(loader=PackageLoader('dtlpy_converters', 'voc'),
+        environment = Environment(loader=PackageLoader('dtlpyconverters', 'voc'),
                                   keep_trailing_newline=True)
         annotation_template = environment.get_template('voc_annotation_template.xml')
         self.annotation_params = {'labels': labels,

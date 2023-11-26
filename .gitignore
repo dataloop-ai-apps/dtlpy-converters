@@ -288,3 +288,4 @@ examples/custom/output5/
 examples/coco
 examples/yolo
 examples/voc
+dataloop_scripts*

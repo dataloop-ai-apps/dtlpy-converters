@@ -3,7 +3,7 @@ import unittest
 import logging
 import asyncio
 
-from dtlpy_converters.tfrecord.tfrecord_converters import DataloopToTFRecord, TFRecordToDataloop
+from dtlpyconverters.tfrecord.tfrecord_converters import DataloopToTFRecord, TFRecordToDataloop
 
 logging.basicConfig(level='INFO')
 

@@ -1,5 +1,5 @@
 import dtlpy as dl
-from dtlpy_converters.custom.custom_converters import DataloopToCustomConverter
+from dtlpyconverters.custom.custom_converters import DataloopToCustomConverter
 import asyncio
 
 

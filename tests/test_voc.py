@@ -3,7 +3,7 @@ import unittest
 import logging
 import asyncio
 
-from dtlpy_converters.voc.voc_converters import VocToDataloop, DataloopToVoc
+from dtlpyconverters.voc.voc_converters import VocToDataloop, DataloopToVoc
 
 logging.basicConfig(level='INFO')
 

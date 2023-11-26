@@ -13,7 +13,7 @@
     "modules": [
       {
         "name": "dtlpy-converters",
-        "entryPoint": "dtlpy_converters/services/converters_service.py",
+        "entryPoint": "dtlpyconverters/services/converters_service.py",
         "className": "DataloopConverters",
         "initInputs": [
         ],

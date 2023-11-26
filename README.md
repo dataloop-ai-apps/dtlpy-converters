@@ -26,7 +26,7 @@ For a technical explanation about the base code, please refer to the [Code Archi
 
 ----
 
-* To add you custom callback function you can inherit from the [main class](dtlpy_converters/base/base_converter.py) and override the methods:
+* To add you custom callback function you can inherit from the [main class](dtlpyconverters/base/base_converter.py) and override the methods:
 
 ```python
 class WhaaaConverter(coco.DataloopToCoco):
@@ -86,7 +86,7 @@ We have a small (10 images) VOC dataset sample to convert and upload to the Data
 ```python
 import asyncio
 import dtlpy as dl
-from dtlpy_converters.voc import VocToDataloop
+from dtlpyconverters.voc import VocToDataloop
 
 annotations_path = '../converters/voc/examples/voc/annotations'
 images_path = '../converters/voc/examples/images'

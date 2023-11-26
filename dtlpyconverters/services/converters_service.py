@@ -3,7 +3,7 @@ import datetime
 import dtlpy as dl
 import asyncio
 import shutil
-from dtlpy_converters import coco_converters, yolo_converters, voc_converters
+from dtlpyconverters import coco_converters, yolo_converters, voc_converters
 import zipfile
 import nest_asyncio
 
@@ -131,42 +131,3 @@ class DataloopConverters(dl.BaseServiceRunner):
                                        timestamp=timestamp,
                                        input_annotations_path=input_annotations_path)
         return output
-
-    def coco_to_dataloop(self, dataset: dl.Dataset, input_annotations_path, input_items_path, coco_json_filename,
-                         annotation_options=None, upload_items=True, to_polygon=True):
-        """
-        :param dataset: dataloop dataset
-        :param input_annotations_path: path to annotations folder
-        :param input_items_path: path to items folder
-        :param coco_json_filename: coco json filename
-        :param upload_items: upload items to dataloop
-        :param annotation_options: list of annotation types to upload:
-                                   [DEFAULT]: [dl.AnnotationType.BOX]
-                                   [OPTIONS]: dl.AnnotationType.SEGMENTATION, dl.AnnotationType.BOX
-        :param to_polygon: convert bbox to polygon
-        """
-        conv = coco_converters.CocoToDataloop(dataset=dataset,
-                                              input_annotations_path=input_annotations_path,
-                                              input_items_path=input_items_path,
-                                              upload_items=upload_items
-                                              )
-        loop = self._get_event_loop()
-        if annotation_options is None:
-            annotation_options = [dl.AnnotationType.BOX]
-        loop.run_until_complete(conv.convert_dataset(coco_json_filename=coco_json_filename,
-                                                     annotation_options=annotation_options,
-                                                     to_polygon=to_polygon))
-
-
-# TODO : check coco metadata
-# if __name__ == '__main__':
-#     path = r"C:\Users\97252\dtlpy_applications\dtlpy-converters"
-#     file_name = 'coco.json'
-#     runner = DataloopConverters()
-#     runner.coco_to_dataloop(dataset=dl.datasets.get(dataset_id='65538510c7760b841eefb2d2'),
-#                             input_annotations_path=path,
-#                             input_items_path=r'C:\Users\97252\Desktop\customers\Dataloop\sdk2\dtlpy\items_for_coco',
-#                             upload_items=True,
-#                             coco_json_filename=file_name,
-#                             annotation_options=[dl.AnnotationType.SEGMENTATION, dl.AnnotationType.BOX],
-#                             to_polygon=True)

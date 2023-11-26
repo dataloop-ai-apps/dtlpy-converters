@@ -1,5 +1,5 @@
 import dtlpy as dl
-from dtlpy_converters.services import DataloopConverters
+from dtlpyconverters.services import DataloopConverters
 
 converter = DataloopConverters()
 

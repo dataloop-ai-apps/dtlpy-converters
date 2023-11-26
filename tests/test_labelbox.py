@@ -3,7 +3,7 @@ import unittest
 import logging
 import asyncio
 
-from dtlpy_converters.labelbox.labelbox_converters import LabelBoxToDataloop
+from dtlpyconverters.labelbox.labelbox_converters import LabelBoxToDataloop
 
 logging.basicConfig(level='INFO')
 

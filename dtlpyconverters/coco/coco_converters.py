@@ -10,7 +10,7 @@ import os
 
 from ..base import BaseExportConverter, BaseImportConverter
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('dtlpyconverters')
 
 try:
     import pycocotools
@@ -587,6 +587,7 @@ class CocoToDataloop(BaseImportConverter):
                     logger.warning(
                         'Empty segmentation, using default: [[]]. coco annotation id: {}'.format(coco_annotation_id))
                 segmentation = np.reshape(segmentation[0], (-1, 2))
+                # if segmentation is empty, the annotation is box
                 if len(segmentation) == 0:
                     ann_def = None
                 elif self.to_polygon is False:
