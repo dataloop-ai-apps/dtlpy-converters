@@ -472,9 +472,12 @@ class DataloopToCoco(BaseExportConverter):
             ann["iscrowd"] = iscrowd
             if keypoints is not None:
                 ann["keypoints"] = keypoints
-            ann['category_id'] = self.categories[annotation.label]['id']
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
+            try:
+                ann['category_id'] = self.categories[annotation.label]['id']
+            except KeyError as e:
+                raise KeyError('Category {!r} not found in dataset'.format(annotation.label))
             self.annotations[annotation.id] = ann
             return kwargs
 
