@@ -1,0 +1,147 @@
+{
+  "name": "dtlpy-converters",
+  "displayName": "Dataloop Converters",
+  "description": "Dataloop converters application",
+  "categories": [],
+  "version": "3.0.1",
+  "scope": "system",
+  "codebase": {
+    "type": "git",
+    "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
+    "gitTag": "3.0.1"
+  },
+  "components": {
+    "modules": [
+      {
+        "name": "dtlpy-converters",
+        "entryPoint": "dtlpyconverters/services/converters_service.py",
+        "className": "DataloopConverters",
+        "initInputs": [
+        ],
+        "functions": [
+          {
+            "name": "dataloop_to_coco",
+            "description": "Convert dataloop dataset to COCO format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "COCO Converter",
+            "action": "download"
+          },
+          {
+            "name": "dataloop_to_voc",
+            "description": "Convert dataloop dataset to VOC format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "VOC Converter",
+            "action": "download"
+          },
+          {
+            "name": "dataloop_to_yolo",
+            "description": "Convert dataloop dataset to YOLO format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "YOLO Converter",
+            "action": "download"
+          }
+        ]
+      }
+    ],
+    "services": [
+      {
+        "name": "dtlpy-converters",
+        "moduleName": "dtlpy-converters",
+        "runtime": {
+          "podType": "highmem-m",
+          "runnerImage": "dataloopai/dtlpy-agent:cpu.py3.8.opencv4.7",
+          "numReplicas": 1,
+          "concurrency": 1,
+          "pyPackages": {},
+          "singleAgent": false,
+          "autoscaler": {
+            "type": "rabbitmq",
+            "minReplicas": 1,
+            "maxReplicas": 10,
+            "queueLength": 2
+          },
+          "preemptible": false,
+          "executionTimeout": 21600,
+          "drainTime": 600,
+          "onReset": "failed",
+          "runExecutionAsProcess": false
+        },
+        "maxAttempts": 2
+      }
+    ],
+    "toolbars": [
+      {
+        "displayName": "COCO Converter 2.0",
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_coco"
+        },
+        "location": "datasetBrowserApps",
+        "icon": "icon-dl-edit"
+      },
+      {
+        "displayName": "YOLO Converter 2.0",
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_yolo"
+        },
+        "location": "datasetBrowserApps",
+        "icon": "icon-dl-edit"
+      },
+      {
+        "displayName": "VOC Converter 2.0",
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_voc"
+        },
+        "location": "datasetBrowserApps",
+        "icon": "icon-dl-edit"
+      }
+    ]
+  }
+}

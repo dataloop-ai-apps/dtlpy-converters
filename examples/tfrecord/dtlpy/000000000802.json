@@ -1,0 +1,116 @@
+{
+  "id": "5f4d13e8cb9b9624c7158462",
+  "datasetId": "5f4d13ba4a958a49a7747cd9",
+  "url": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e8cb9b9624c7158462",
+  "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+  "createdAt": "2020-08-31T15:14:48.000Z",
+  "dir": "/items",
+  "filename": "/items/000000000802.jpg",
+  "type": "file",
+  "hidden": false,
+  "metadata": {
+    "system": {
+      "originalname": "file",
+      "size": 62406,
+      "encoding": "7bit",
+      "mimetype": "image/jpeg",
+      "annotationStatus": [],
+      "refs": [],
+      "executionLogs": {
+        "image-metadata-extractor": {
+          "default_module": {
+            "run": {
+              "5f4d13e88af8f5ab8fac3a16": {
+                "progress": 100,
+                "status": "success"
+              }
+            }
+          }
+        }
+      },
+      "exif": {},
+      "height": 640,
+      "width": 424,
+      "isBinary": true,
+      "taskStatusLog": []
+    }
+  },
+  "name": "000000000802.jpg",
+  "creator": "or@dataloop.ai",
+  "stream": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e8cb9b9624c7158462/stream",
+  "thumbnail": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e8cb9b9624c7158462/thumbnail",
+  "annotations": [
+    {
+      "id": "5f4d13ecb92f0b0883a9a7c0",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13e8cb9b9624c7158462",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ecb92f0b0883a9a7c0",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e8cb9b9624c7158462",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "oven",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 289.08,
+          "z": 0,
+          "x": 33.08
+        },
+        {
+          "y": 520.63,
+          "z": 0,
+          "x": 159.64
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204038154
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:52.045Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:13:49.649Z",
+      "hash": "602fb457930ee8401ff1a076be6fded7f764cae9",
+      "source": "unknown"
+    },
+    {
+      "id": "5f4d13ecb92f0b6c72a9a7c2",
+      "datasetId": "5f4d13ba4a958a49a7747cd9",
+      "itemId": "5f4d13e8cb9b9624c7158462",
+      "url": "https://rc-gate.dataloop.ai/api/v1/annotations/5f4d13ecb92f0b6c72a9a7c2",
+      "item": "https://rc-gate.dataloop.ai/api/v1/items/5f4d13e8cb9b9624c7158462",
+      "dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/5f4d13ba4a958a49a7747cd9",
+      "type": "box",
+      "label": "refrigerator",
+      "attributes": [],
+      "coordinates": [
+        {
+          "y": 185.23,
+          "z": 0,
+          "x": 245.05
+        },
+        {
+          "y": 541.26,
+          "z": 0,
+          "x": 410.81
+        }
+      ],
+      "metadata": {
+        "system": {
+          "automated": true,
+          "duplicate": 1631204038187
+        }
+      },
+      "creator": "or@dataloop.ai",
+      "createdAt": "2020-08-31T15:14:52.046Z",
+      "updatedBy": "or@dataloop.ai",
+      "updatedAt": "2021-09-09T16:13:49.650Z",
+      "hash": "3eaf213ff25eabe29448d52bd93fa348e176f9d4",
+      "source": "unknown"
+    }
+  ],
+  "annotationsCount": 2,
+  "annotated": true
+}
