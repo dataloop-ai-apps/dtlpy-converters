@@ -1,10 +1,13 @@
 {
   "name": "dtlpy-converters",
   "displayName": "Dataloop Converters",
-  "description": "Dataloop converters application",
-  "categories": [],
+  "description": "Dataloop Converters Application",
+   "attributes": {
+    "Provider": "Dataloop",
+    "Category": "Element"
+  },
   "version": "3.0.1",
-  "scope": "system",
+  "scope": "public",
   "codebase": {
     "type": "git",
     "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
