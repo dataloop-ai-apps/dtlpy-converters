@@ -6,12 +6,12 @@
     "Provider": "Dataloop",
     "Category": "Element"
   },
-  "version": "3.0.1",
+  "version": "3.0.2",
   "scope": "public",
   "codebase": {
     "type": "git",
     "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
-    "gitTag": "3.0.1"
+    "gitTag": "3.0.2"
   },
   "components": {
     "modules": [
