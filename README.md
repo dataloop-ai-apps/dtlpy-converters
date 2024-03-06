@@ -14,7 +14,7 @@ Note! This repo is still under construction.
 Install directly from git:
 
 ```shell
-pip install git+https://github.com/dataloop-ai/dtlpy-converters
+pip install git+https://github.com/dataloop-ai-apps/dtlpy-converters
 ```
 
 ## How This Works
