@@ -515,6 +515,34 @@ class CocoToDataloop(BaseImportConverter):
             return_error_filepath=return_error_filepath,
         )
 
+    @staticmethod
+    def create_label_hierarchy(categories):
+        """
+        Creates a dictionary mapping category IDs to their supercategory hierarchy and name.
+
+        Returns:
+            A dictionary mapping category IDs to their supercategory hierarchy and name.
+        """
+        labels = {}
+        for category_id, category in categories.items():
+            name = category["name"]
+            super_category = category.get("supercategory")
+            hierarchy = []
+            if name == super_category:
+                hierarchy.append(super_category)
+            else:
+                while super_category is not None:
+                    hierarchy.append(super_category)
+                    super_category = None
+                    for cat_id, cat in categories.items():
+                        if cat["name"] == hierarchy[-1]:
+                            super_category = cat.get("supercategory", None)
+                            break
+            hierarchy.reverse()
+            hierarchy.append(name)
+            labels[category_id] = ".".join(hierarchy)
+        return labels
+
     async def convert_dataset(self,
                               annotation_options=None,
                               coco_json_filename='coco.json',
@@ -523,13 +551,15 @@ class CocoToDataloop(BaseImportConverter):
         self.to_polygon = to_polygon
         self.coco_dataset = pycocotools.coco.COCO(
             annotation_file=os.path.join(self.input_annotations_path, coco_json_filename))
-
+        self.labels = self.create_label_hierarchy(self.coco_dataset.cats)
         futures = [asyncio.create_task(self.on_item(coco_image=coco_image))
                    for coco_image_id, coco_image in self.coco_dataset.imgs.items()]
         await asyncio.gather(*futures)
 
-    async def on_item(self, **kwargs):
+        if self.add_labels_to_recipe is True:
+            self.dataset.add_labels(label_list=list(self.labels.values()))
 
+    async def on_item(self, **kwargs):
         coco_image = kwargs.get('coco_image')
         filename = coco_image['file_name']
         coco_image_id = coco_image['id']
@@ -568,7 +598,7 @@ class CocoToDataloop(BaseImportConverter):
         iscrowd = coco_annotation.get('iscrowd', None)
         keypoints = coco_annotation.get('keypoints', None)
         bbox = coco_annotation.get('bbox', None)
-        label = self.coco_dataset.cats[category_id]['name']
+        label = self.labels[category_id]
 
         ann_def = None
         if segmentation is not None and dl.AnnotationType.SEGMENTATION in self.annotation_options:
