@@ -566,11 +566,10 @@ class CocoToDataloop(BaseImportConverter):
         logger.debug(f'Started: {coco_image_id}')
         coco_annotations = self.coco_dataset.imgToAnns[coco_image_id]
         if self.upload_items:
-            # item = self.dataset.items.upload(os.path.join(self.input_items_path, filename))
             uploader = dl.repositories.uploader.Uploader(items_repository=self.dataset.items)
             item = await uploader._Uploader__single_async_upload(filepath=os.path.join(self.input_items_path, filename),
                                                                  remote_path=f'/{os.path.dirname(filename)}',
-                                                                 uploaded_filename=filename,
+                                                                 uploaded_filename=f'{os.path.basename(filename)}',
                                                                  last_try=True,
                                                                  mode='skip',
                                                                  item_metadata=dict(),
