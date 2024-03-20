@@ -6,6 +6,8 @@ import webvtt
 import time
 import json
 import os
+import asyncio
+import concurrent.futures
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -52,8 +54,11 @@ class VttToDataloop(BaseImportConverter):
         # read annotations files and run on items
         files = list(Path(self.input_annotations_path).rglob('*.vtt'))
         files.extend(list(Path(self.input_annotations_path).rglob('*.rst')))
-        for txt_file in files:
-            _ = await self.on_item(annotation_filepath=str(txt_file))
+
+        tasks = [self.on_item(annotation_filepath=str(txt_file)) for txt_file in files]
+
+        # Running the tasks concurrently
+        await asyncio.gather(*tasks)
 
     async def on_item(self, **context):
         """
@@ -75,8 +80,12 @@ class VttToDataloop(BaseImportConverter):
         dirname = os.path.dirname(remote_rel_path)
         if self.upload_items:
             # TODO add overwrite as input arg
-            item = self.dataset.items.upload(local_path=audio_filename,
-                                             remote_path=f'/{dirname}')
+            loop = asyncio.get_event_loop()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.concurrency) as pool:
+                item = await loop.run_in_executor(
+                    pool,
+                    lambda: self.dataset.items.upload(local_path=audio_filename, remote_path=f'/{dirname}')
+                )
         else:
             try:
                 item = self.dataset.items.get(f'/{remote_rel_path}')
@@ -226,14 +235,14 @@ class DataloopToVtt(BaseExportConverter):
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
         :param context:
                 See below
-    
+
         :Keyword Arguments:
             * *annotation* (``dl.Annotations``) -- the box annotations to convert
             * *item* (``dl.Item``) -- Item of the annotation
             * *width* (``int``) -- image width
             * *height* (``int``) -- image height
             * *exif* (``dict``) -- exif information (Orientation)
-    
+
         :return: converted Annotation
         :rtype: tuple
         """
