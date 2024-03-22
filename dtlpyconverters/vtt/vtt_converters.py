@@ -7,7 +7,7 @@ import time
 import json
 import os
 import asyncio
-import concurrent.futures
+import nest_asyncio
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -25,6 +25,9 @@ class VttToDataloop(BaseImportConverter):
                  concurrency=6,
                  return_error_filepath=False,
                  ):
+
+        nest_asyncio.apply()
+
         # global vars
         super(VttToDataloop, self).__init__(
             dataset=dataset,
@@ -36,6 +39,18 @@ class VttToDataloop(BaseImportConverter):
             concurrency=concurrency,
             return_error_filepath=return_error_filepath,
         )
+
+    @staticmethod
+    def _get_event_loop():
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError as e:
+            if "no current event loop" in str(e):
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            else:
+                raise e
+        return loop
 
     async def convert_dataset(self,
                               speaker_in_caption=True,
@@ -79,13 +94,18 @@ class VttToDataloop(BaseImportConverter):
         remote_rel_path = os.path.relpath(audio_filename, self.input_items_path)
         dirname = os.path.dirname(remote_rel_path)
         if self.upload_items:
-            # TODO add overwrite as input arg
-            loop = asyncio.get_event_loop()
-            with concurrent.futures.ThreadPoolExecutor(max_workers=self.concurrency) as pool:
-                item = await loop.run_in_executor(
-                    pool,
-                    lambda: self.dataset.items.upload(local_path=audio_filename, remote_path=f'/{dirname}')
-                )
+
+            uploader = dl.repositories.uploader.Uploader(items_repository=self.dataset.items)
+            item = await uploader._Uploader__single_async_upload(filepath=audio_filename,
+                                                                 remote_path=f'/{dirname}',
+                                                                 uploaded_filename=f'{os.path.basename(audio_filename)}',
+                                                                 last_try=True,
+                                                                 mode='skip',
+                                                                 item_metadata=dict(),
+                                                                 callback=None,
+                                                                 item_description=None
+                                                                 )
+            item = item[0]
         else:
             try:
                 item = self.dataset.items.get(f'/{remote_rel_path}')
