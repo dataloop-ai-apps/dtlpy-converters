@@ -114,9 +114,9 @@ class VttToDataloop(BaseImportConverter):
         file, ext = os.path.splitext(annotation_filepath)
 
         if ext == ".vtt":
-            data = webvtt.read(annotation_filepath)
+            data = await asyncio.to_thread(self.async_read_vtt, annotation_filepath)
         elif ext == ".srt":
-            data = webvtt.from_srt(annotation_filepath)
+            data = await asyncio.to_thread(self.async_from_srt, annotation_filepath)
         else:
             raise ValueError('missing VTT file')
 
@@ -137,7 +137,6 @@ class VttToDataloop(BaseImportConverter):
 
         # Upload the annotations collection
         await item.annotations._async_upload_annotations(annotation_collection)
-
         # print("Updating speaker names for each label")
         # audio_item.metadata["system"]["audioSpeakers"] = {}
         # index = 1
@@ -186,6 +185,14 @@ class VttToDataloop(BaseImportConverter):
                                  end_time=caption.end_in_seconds,
                                  object_id=caption.identifier
                                  )
+
+    @staticmethod
+    async def async_read_vtt(filepath):
+        return webvtt.read(filepath)
+
+    @staticmethod
+    async def async_from_srt(filepath):
+        return webvtt.from_srt(filepath)
 
 
 class DataloopToVtt(BaseExportConverter):
