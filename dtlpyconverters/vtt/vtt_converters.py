@@ -182,11 +182,11 @@ class VttToDataloop(BaseImportConverter):
                                  )
 
     @staticmethod
-    async def async_read_vtt(filepath):
+    def async_read_vtt(filepath):
         return webvtt.read(filepath)
 
     @staticmethod
-    async def async_from_srt(filepath):
+    def async_from_srt(filepath):
         return webvtt.from_srt(filepath)
 
 
