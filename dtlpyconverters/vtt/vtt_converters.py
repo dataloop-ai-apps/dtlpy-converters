@@ -126,16 +126,11 @@ class VttToDataloop(BaseImportConverter):
         speaker_name = None
         speaker_transcript = None
 
-        annotation_tasks = [self.on_annotation(item=item, caption=caption) for caption in data]
-
-        # Process annotations concurrently and get the results
-        processed_annotations = await asyncio.gather(*annotation_tasks)
-
-        # Build the annotation collection
         annotation_collection = item.annotations.builder()
-        annotation_collection.annotations.extend(processed_annotations)
-
-        # Upload the annotations collection
+        for caption in data:
+            annotation_collection.annotations.append(await self.on_annotation(item=item,
+                                                                              caption=caption,
+                                                                              ))
         await item.annotations._async_upload_annotations(annotation_collection)
         # print("Updating speaker names for each label")
         # audio_item.metadata["system"]["audioSpeakers"] = {}
