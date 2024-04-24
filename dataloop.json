@@ -7,12 +7,12 @@
     "Category": "Application",
     "Application Type": "Function"
   },
-  "version": "3.0.2",
+  "version": "3.0.3",
   "scope": "public",
   "codebase": {
     "type": "git",
     "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
-    "gitTag": "3.0.2"
+    "gitTag": "3.0.3"
   },
   "components": {
     "modules": [
