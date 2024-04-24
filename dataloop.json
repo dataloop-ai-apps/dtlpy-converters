@@ -4,7 +4,8 @@
   "description": "Dataloop Converters Application",
    "attributes": {
     "Provider": "Dataloop",
-    "Category": "Element"
+    "Category": "Application",
+    "Application Type": "Function"
   },
   "version": "3.0.2",
   "scope": "public",
