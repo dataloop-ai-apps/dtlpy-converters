@@ -63,39 +63,79 @@ class YoloToDataloop(BaseImportConverter):
         # find images with the same name (ignore image ext)
         relpath = os.path.relpath(annotation_filepath, self.input_annotations_path)
         filename, ext = os.path.splitext(relpath)
-        image_filepaths = list(Path(os.path.join(self.input_items_path)).rglob(f'{filename}.*'))
-        if len(image_filepaths) != 1:
+        input_filepaths = list(Path(os.path.join(self.input_items_path)).rglob(f'{filename}.*'))
+        if len(input_filepaths) != 1:
             assert AssertionError
 
-        # image filepath found
-        image_filename = str(image_filepaths[0])
-        remote_rel_path = os.path.relpath(image_filename, self.input_items_path)
+        # input filepath found
+        input_filename = str(input_filepaths[0])
+        remote_rel_path = os.path.relpath(input_filename, self.input_items_path)
         dirname = os.path.dirname(remote_rel_path)
         if self.upload_items:
             # TODO add overwrite as input arg
-            item = self.dataset.items.upload(image_filename,
-                                             remote_path=f'/{dirname}')
+            item = self.dataset.items.upload(local_path=input_filename, remote_path=f'/{dirname}')
         else:
             try:
-                item = self.dataset.items.get(f'/{remote_rel_path}')
+                item = self.dataset.items.get(filepath=f'/{remote_rel_path}')
             except dl.exceptions.NotFound:
                 raise
 
+        # get item width and height
         if item.width is None:
-            width = Image.open(image_filename).size[0]
+            if "image" in item.mimetype:
+                width = Image.open(input_filename).size[0]
+            else:
+                # TODO: Check how to get video width
+                raise NotImplementedError
         else:
             width = item.width
         if item.height is None:
-            height = Image.open(image_filename).size[1]
+            if "image" in item.mimetype:
+                height = Image.open(input_filename).size[1]
+            else:
+                # TODO: Check how to get video height
+                raise NotImplementedError
         else:
             height = item.height
 
+        if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
+            width, height = (item.height, item.width)
+
+        # Parse the annotations and upload them to the item
         annotation_collection = item.annotations.builder()
-        for annotation in lines:
-            annotation_collection.annotations.append(await self.on_annotation(item=item,
-                                                                              annotation=annotation,
-                                                                              width=width,
-                                                                              height=height))
+        if "image" in item.mimetype:
+            for annotation in lines:
+                annotation_collection.annotations.append(await self.on_annotation(
+                    item=item,
+                    annotation=annotation,
+                    width=width,
+                    height=height
+                ))
+
+        elif "video" in item.mimetype:
+            # Split annotations by object_id
+            frame_annotations_dict = dict()
+            for frame_annotation in lines:
+                frame_annotation_split = frame_annotation.split(' ')
+                frame_num = frame_annotation_split[0]
+                object_id = frame_annotation_split[1]
+
+                if object_id not in frame_annotations_dict:
+                    frame_annotations_dict[object_id] = dict()
+                frame_annotations_dict[object_id][frame_num] = frame_annotation
+
+            for object_id, frame_annotations in frame_annotations_dict.items():
+                annotation_collection.annotations.append(await self.on_annotation(
+                    item=item,
+                    frame_annotations=frame_annotations,
+                    width=width,
+                    height=height,
+                    object_id=object_id
+                ))
+
+        else:
+            return  # skip unsupported item types
+
         await item.annotations._async_upload_annotations(annotation_collection)
 
     async def on_annotation(self, **context):
@@ -107,10 +147,144 @@ class YoloToDataloop(BaseImportConverter):
         :return: converted Annotation entity
         :rtype: dtlpy.entities.annotation.Annotation
         """
-        annotation = context.get('annotation')
+        item: dl.Item = context.get('item')
         width = context.get('width')
         height = context.get('height')
-        item = context.get('item')
+
+        if "image" in item.mimetype:
+            annotation: str = context.get('annotation')
+            line_data = annotation.split(" ")
+
+            # <label_id> <coordinates>
+            label_id = int(line_data[0])
+            coordinates = [float(coordinate) for coordinate in line_data[1:]]
+
+            if len(coordinates) == 4:
+                ann_def = self.on_box(
+                    item=item,
+                    width=width,
+                    height=height,
+                    label_id=label_id,
+                    coordinates=coordinates,
+                )
+            elif len(coordinates) > 4 and len(coordinates) % 2 == 0:
+                ann_def = self.on_polygon(
+                    item=item,
+                    width=width,
+                    height=height,
+                    label_id=label_id,
+                    coordinates=coordinates,
+                )
+            else:
+                raise Exception(f'Unsupported image annotation format: {annotation}')
+
+            new_annotation = dl.Annotation.new(annotation_definition=ann_def, item=item)
+
+        elif "video" in item.mimetype:
+            object_id = context.get('object_id')
+            frame_annotations: dict = context.get('frame_annotations')
+            sorted_frame_annotations = [frame_annotations[frame] for frame in sorted(list(frame_annotations.keys()))]
+
+            # Check first frame info
+            first_frame_annotation = sorted_frame_annotations[0]
+            first_line_data = first_frame_annotation.split(' ')
+
+            # <frame_num> <object_id> <label_id> <coordinates>
+            frame_num = int(first_line_data[0])
+            label_id = int(first_line_data[2])
+            coordinates = [float(coordinate) for coordinate in first_line_data[3:]]
+
+            if len(coordinates) == 4:
+                ann_def = self.on_box(
+                    item=item,
+                    width=width,
+                    height=height,
+                    label_id=label_id,
+                    coordinates=coordinates,
+                )
+                new_annotation = dl.Annotation.new(
+                    annotation_definition=ann_def,
+                    item=item,
+                    object_id=object_id,
+                    frame_num=frame_num
+                )
+
+                for frame_annotation in sorted_frame_annotations[1:]:
+                    line_data = frame_annotation.split(' ')
+
+                    # <frame_num> <object_id> <label_id> <coordinates>
+                    frame_num = int(line_data[0])
+                    label_id = int(line_data[2])
+                    coordinates = [float(coordinate) for coordinate in line_data[3:]]
+
+                    ann_def = self.on_box(
+                        item=item,
+                        width=width,
+                        height=height,
+                        label_id=label_id,
+                        coordinates=coordinates,
+                    )
+                    new_annotation.add_frame(
+                        annotation_definition=ann_def,
+                        frame_num=frame_num
+                    )
+
+            elif len(coordinates) > 4 and len(coordinates) % 2 == 0:
+                ann_def = self.on_polygon(
+                    item=item,
+                    width=width,
+                    height=height,
+                    label_id=label_id,
+                    coordinates=coordinates,
+                )
+                new_annotation = dl.Annotation.new(
+                    annotation_definition=ann_def,
+                    item=item,
+                    object_id=object_id,
+                    frame_num=frame_num
+                )
+
+                for frame_annotation in sorted_frame_annotations[1:]:
+                    line_data = frame_annotation.split(' ')
+
+                    # <frame_num> <object_id> <label_id> <coordinates>
+                    frame_num = int(line_data[0])
+                    label_id = int(line_data[2])
+                    coordinates = [float(coordinate) for coordinate in line_data[3:]]
+
+                    ann_def = self.on_polygon(
+                        item=item,
+                        width=width,
+                        height=height,
+                        label_id=label_id,
+                        coordinates=coordinates,
+                    )
+                    new_annotation.add_frame(
+                        annotation_definition=ann_def,
+                        frame_num=frame_num
+                    )
+
+            else:
+                raise Exception(f'Unsupported video annotation format for: {first_frame_annotation}')
+
+        else:
+            raise Exception(f'Unsupported item type: {item.mimetype}')
+
+        return new_annotation
+
+    def on_box(self, **context):
+        """
+        Convert from YOLO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
+
+        **Prerequisites**: You must be an *owner* or *developer* to use this method.
+        :param context: additional params
+        :return: converted Annotation entity
+        :rtype: dtlpy.entities.annotation.Annotation
+        """
+        width = context.get('width')
+        height = context.get('height')
+        annotation = context.get('annotation')
+
         # convert txt line to yolo params as floats
         label_id, x, y, w, h = np.asarray(annotation.strip().split(' ')).astype(float)
         label = self.id_to_label_map.get(int(label_id), f'{label_id}_MISSING')
@@ -122,13 +296,17 @@ class YoloToDataloop(BaseImportConverter):
         right = x + (w / 2)
         top = y - (h / 2)
         bottom = y + (h / 2)
-        ann_def = dl.Box(top=top,
-                         bottom=bottom,
-                         left=left,
-                         right=right,
-                         label=label)
-        return dl.Annotation.new(annotation_definition=ann_def,
-                                 item=item)
+        ann_def = dl.Box(
+            top=top,
+            bottom=bottom,
+            left=left,
+            right=right,
+            label=label
+        )
+        return ann_def
+
+    def on_polygon(self):
+        pass
 
 
 class DataloopToYolo(BaseExportConverter):
