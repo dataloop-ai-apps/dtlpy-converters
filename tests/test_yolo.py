@@ -48,6 +48,36 @@ class TestYolo(unittest.TestCase):
         loop.run_until_complete(conv.convert_dataset())
         # self.assertEqual()
 
+    def test_3_yolo_to_dtlpy(self):
+        annotations_path = 'examples/yolo/yolo_videos/annotations'
+        labels_txt_filepath = 'examples/yolo/yolo_videos/labels.txt'
+        videos_path = 'examples/yolo/videos'
+        add_to_recipe = True
+
+        conv = YoloToDataloop(input_annotations_path=annotations_path,
+                              add_labels_to_recipe=add_to_recipe,
+                              input_items_path=videos_path,
+                              upload_items=True,
+                              dataset=self.dataset)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(conv.convert_dataset(labels_txt_filepath=labels_txt_filepath))
+        # self.assertEqual()
+
+    def test_4_dtlpy_to_yolo(self):
+        # TODO: Check why dataset labels order doesn't match the labels.txt order
+        videos_path = 'tmp/yolo/videos'
+        to_path = 'tmp/yolo/yolo_videos'
+        from_path = 'tmp/yolo/dtlpy_videos'
+
+        conv = DataloopToYolo(output_annotations_path=to_path,
+                              input_annotations_path=from_path,
+                              output_items_path=videos_path,
+                              download_items=False,
+                              dataset=self.dataset)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(conv.convert_dataset())
+        # self.assertEqual()
+
 
 if __name__ == '__main__':
     unittest.TestLoader.sortTestMethodsUsing = None

@@ -6,6 +6,7 @@ import logging
 import time
 import json
 import os
+import cv2
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -81,21 +82,18 @@ class YoloToDataloop(BaseImportConverter):
                 raise
 
         # get item width and height
-        if item.width is None:
+        if item.width is None or item.height is None:
             if "image" in item.mimetype:
                 width = Image.open(input_filename).size[0]
+                height = Image.open(input_filename).size[1]
+            elif "video" in item.mimetype:
+                vid = cv2.VideoCapture(input_filename)
+                height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
             else:
-                # TODO: Check how to get video width
-                raise NotImplementedError
+                raise Exception(f'Unsupported item type: {item.mimetype}')
         else:
             width = item.width
-        if item.height is None:
-            if "image" in item.mimetype:
-                height = Image.open(input_filename).size[1]
-            else:
-                # TODO: Check how to get video height
-                raise NotImplementedError
-        else:
             height = item.height
 
         if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
@@ -465,7 +463,7 @@ class DataloopToYolo(BaseExportConverter):
             box_yolo_string_list = list()
 
             frame_annotation: dl.entities.FrameAnnotation
-            for frame_annotation in annotation.frames:
+            for frame_annotation in list(annotation.frames.values()):
                 x = (frame_annotation.left + frame_annotation.right) / 2.0
                 y = (frame_annotation.top + frame_annotation.bottom) / 2.0
                 w = frame_annotation.right - frame_annotation.left
@@ -478,6 +476,11 @@ class DataloopToYolo(BaseExportConverter):
                 frame_num = frame_annotation.frame_num
                 object_id = annotation.object_id
                 label_id = self.label_to_id_map[frame_annotation.label]
+
+                if object_id is None:
+                    raise Exception(
+                        f'Object ID is missing for the annotation: (ID: "{annotation.id}", Label: "{annotation.label}")'
+                    )
 
                 # <frame_num> <object_id> <label_id> <x> <y> <width> <height>
                 box_yolo_string_list.append(f'{frame_num} {object_id} {label_id} {x} {y} {w} {h}')
