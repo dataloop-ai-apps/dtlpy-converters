@@ -125,9 +125,11 @@ class YoloToDataloop(BaseImportConverter):
                 frame_annotations_dict[object_id][frame_num] = frame_annotation
 
             for object_id, frame_annotations in frame_annotations_dict.items():
+                sorted_frames = sorted(list(frame_annotations.keys()))
+                sorted_frame_annotations = [frame_annotations[frame] for frame in sorted_frames]
                 annotation_collection.annotations.append(await self.on_annotation(
                     item=item,
-                    frame_annotations=frame_annotations,
+                    sorted_frame_annotations=sorted_frame_annotations,
                     width=width,
                     height=height,
                     object_id=object_id
@@ -140,7 +142,7 @@ class YoloToDataloop(BaseImportConverter):
 
     async def on_annotation(self, **context):
         """
-        Convert from COCO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
+        Convert from YOLO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
 
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
         :param context: additional params
@@ -153,7 +155,7 @@ class YoloToDataloop(BaseImportConverter):
 
         if "image" in item.mimetype:
             annotation: str = context.get('annotation')
-            line_data = annotation.split(" ")
+            line_data = annotation.strip().split(" ")
 
             # <label_id> <coordinates>
             label_id = int(line_data[0])
@@ -161,7 +163,6 @@ class YoloToDataloop(BaseImportConverter):
 
             if len(coordinates) == 4:
                 ann_def = self.on_box(
-                    item=item,
                     width=width,
                     height=height,
                     label_id=label_id,
@@ -169,7 +170,6 @@ class YoloToDataloop(BaseImportConverter):
                 )
             elif len(coordinates) > 4 and len(coordinates) % 2 == 0:
                 ann_def = self.on_polygon(
-                    item=item,
                     width=width,
                     height=height,
                     label_id=label_id,
@@ -182,8 +182,7 @@ class YoloToDataloop(BaseImportConverter):
 
         elif "video" in item.mimetype:
             object_id = context.get('object_id')
-            frame_annotations: dict = context.get('frame_annotations')
-            sorted_frame_annotations = [frame_annotations[frame] for frame in sorted(list(frame_annotations.keys()))]
+            sorted_frame_annotations: list = context.get('sorted_frame_annotations')
 
             # Check first frame info
             first_frame_annotation = sorted_frame_annotations[0]
@@ -192,11 +191,10 @@ class YoloToDataloop(BaseImportConverter):
             # <frame_num> <object_id> <label_id> <coordinates>
             frame_num = int(first_line_data[0])
             label_id = int(first_line_data[2])
-            coordinates = [float(coordinate) for coordinate in first_line_data[3:]]
+            coordinates = np.asarray(first_line_data[3:]).astype(float)
 
             if len(coordinates) == 4:
                 ann_def = self.on_box(
-                    item=item,
                     width=width,
                     height=height,
                     label_id=label_id,
@@ -210,15 +208,14 @@ class YoloToDataloop(BaseImportConverter):
                 )
 
                 for frame_annotation in sorted_frame_annotations[1:]:
-                    line_data = frame_annotation.split(' ')
+                    line_data = frame_annotation.strip().split(' ')
 
                     # <frame_num> <object_id> <label_id> <coordinates>
                     frame_num = int(line_data[0])
                     label_id = int(line_data[2])
-                    coordinates = [float(coordinate) for coordinate in line_data[3:]]
+                    coordinates = np.asarray(line_data[3:]).astype(float)
 
                     ann_def = self.on_box(
-                        item=item,
                         width=width,
                         height=height,
                         label_id=label_id,
@@ -231,7 +228,6 @@ class YoloToDataloop(BaseImportConverter):
 
             elif len(coordinates) > 4 and len(coordinates) % 2 == 0:
                 ann_def = self.on_polygon(
-                    item=item,
                     width=width,
                     height=height,
                     label_id=label_id,
@@ -250,10 +246,9 @@ class YoloToDataloop(BaseImportConverter):
                     # <frame_num> <object_id> <label_id> <coordinates>
                     frame_num = int(line_data[0])
                     label_id = int(line_data[2])
-                    coordinates = [float(coordinate) for coordinate in line_data[3:]]
+                    coordinates = np.asarray(line_data[3:]).astype(float)
 
                     ann_def = self.on_polygon(
-                        item=item,
                         width=width,
                         height=height,
                         label_id=label_id,
@@ -274,20 +269,15 @@ class YoloToDataloop(BaseImportConverter):
 
     def on_box(self, **context):
         """
-        Convert from YOLO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
 
-        **Prerequisites**: You must be an *owner* or *developer* to use this method.
-        :param context: additional params
-        :return: converted Annotation entity
-        :rtype: dtlpy.entities.annotation.Annotation
         """
         width = context.get('width')
         height = context.get('height')
-        annotation = context.get('annotation')
+        label_id = context.get('label_id')
+        coordinates = context.get('coordinates')
 
-        # convert txt line to yolo params as floats
-        label_id, x, y, w, h = np.asarray(annotation.strip().split(' ')).astype(float)
-        label = self.id_to_label_map.get(int(label_id), f'{label_id}_MISSING')
+        x, y, w, h = coordinates
+        label = self.id_to_label_map.get(label_id, f'{label_id}_MISSING')
         x = x * width
         y = y * height
         w = w * width
@@ -305,8 +295,45 @@ class YoloToDataloop(BaseImportConverter):
         )
         return ann_def
 
-    def on_polygon(self):
-        pass
+    def on_polygon(self, **context):
+        """
+
+        """
+        width = context.get('width')
+        height = context.get('height')
+        label_id = context.get('label_id')
+        coordinates = context.get('coordinates')
+
+        coordinates = np.asarray(coordinates).reshape(-1, 2)
+        coordinates[:, 0] = coordinates[:, 0] * width
+        coordinates[:, 1] = coordinates[:, 1] * height
+        label = self.id_to_label_map.get(label_id, f'{label_id}_MISSING')
+        ann_def = dl.Polygon(
+            geo=coordinates.tolist(),
+            label=label
+        )
+        return ann_def
+
+    # TODO: Check how to define customizable flag for this option
+    def on_segmentation(self, **context):
+        """
+
+        """
+        width = context.get('width')
+        height = context.get('height')
+        label_id = context.get('label_id')
+        coordinates = context.get('coordinates')
+
+        coordinates = np.asarray(coordinates).reshape(-1, 2)
+        coordinates[:, 0] = coordinates[:, 0] * width
+        coordinates[:, 1] = coordinates[:, 1] * height
+        label = self.id_to_label_map.get(label_id, f'{label_id}_MISSING')
+        ann_def = dl.Segmentation.from_polygon(
+            geo=coordinates.tolist(),
+            label=label,
+            shape=(height, width)
+        )
+        return ann_def
 
 
 class DataloopToYolo(BaseExportConverter):
