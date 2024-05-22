@@ -197,6 +197,10 @@ class DataloopToYolo(BaseExportConverter):
                 outs = await self.on_annotation_end(
                     **await self.on_polygon(
                         **await self.on_annotation_start(**outs)))
+            elif annotation.type == dl.AnnotationType.SEGMENTATION:
+                outs = await self.on_annotation_end(
+                    **await self.on_segmentation(
+                        **await self.on_annotation_start(**outs)))
             else:
                 continue  # skip unsupported annotation types
             item_yolo_strings.append(outs.get('yolo_string'))
@@ -247,11 +251,34 @@ class DataloopToYolo(BaseExportConverter):
             h = h * dh
 
             label_id = self.label_to_id_map[annotation.label]
+
+            # <label_id> <x> <y> <width> <height>
             yolo_string = f'{label_id} {x} {y} {w} {h}'
             context['yolo_string'] = yolo_string
 
         elif "video" in item.mimetype:
-            raise NotImplementedError
+            box_yolo_string_list = list()
+
+            frame_annotation: dl.entities.FrameAnnotation
+            for frame_annotation in annotation.frames:
+                x = (frame_annotation.left + frame_annotation.right) / 2.0
+                y = (frame_annotation.top + frame_annotation.bottom) / 2.0
+                w = frame_annotation.right - frame_annotation.left
+                h = frame_annotation.bottom - frame_annotation.top
+                x = x * dw
+                w = w * dw
+                y = y * dh
+                h = h * dh
+
+                frame_num = frame_annotation.frame_num
+                object_id = annotation.object_id
+                label_id = self.label_to_id_map[frame_annotation.label]
+
+                # <frame_num> <object_id> <label_id> <x> <y> <width> <height>
+                box_yolo_string_list.append(f'{frame_num} {object_id} {label_id} {x} {y} {w} {h}')
+
+            yolo_string = '\n'.join(box_yolo_string_list)
+            context['yolo_string'] = yolo_string
 
         return context
 
@@ -282,17 +309,94 @@ class DataloopToYolo(BaseExportConverter):
         dw = 1.0 / width
         dh = 1.0 / height
 
-        coordinates_list = list()
         if "image" in item.mimetype:
+            coordinates_list = list()
             for coordinates in annotation.geo:
-                coordinates_list.append(f"{coordinates[0] * dw} {coordinates[1] * dh}")
-            coordinates_string = " ".join(coordinates_list)
+                coordinates_list.append(f'{coordinates[0] * dw} {coordinates[1] * dh}')
+            coordinates_string = ' '.join(coordinates_list)
 
             label_id = self.label_to_id_map[annotation.label]
+
+            # <label_id> <x1> <y1> <x2> <y2> <x3> <y3> ...
             yolo_string = f'{label_id} {coordinates_string}'
             context['yolo_string'] = yolo_string
 
         elif "video" in item.mimetype:
-            raise NotImplementedError
+            polygon_yolo_string_list = list()
+
+            frame_annotation: dl.entities.FrameAnnotation
+            for frame_annotation in annotation.frames:
+                coordinates_list = list()
+                for coordinates in annotation.geo:
+                    coordinates_list.append(f'{coordinates[0] * dw} {coordinates[1] * dh}')
+                coordinates_string = ' '.join(coordinates_list)
+
+                frame_num = frame_annotation.frame_num
+                object_id = annotation.object_id
+                label_id = self.label_to_id_map[frame_annotation.label]
+
+                # <frame_num> <object_id> <label_id> <x1> <y1> <x2> <y2> <x3> <y3> ...
+                polygon_yolo_string_list.append(f'{frame_num} {object_id} {label_id} {coordinates_string}')
+
+            yolo_string = '\n'.join(polygon_yolo_string_list)
+            context['yolo_string'] = yolo_string
+
+        return context
+
+    async def on_segmentation(self, **context) -> dict:
+        """
+        Convert from DATALOOP format to YOLO format. Use this as conversion_func param for functions that ask for this param.
+        **Prerequisites**: You must be an *owner* or *developer* to use this method.
+        :param context:
+                See below
+
+        :Keyword Arguments:
+            * *annotation* (``dl.Annotations``) -- the segmentation annotations to convert (exporting in polygon format)
+            * *item* (``dl.Item``) -- Item of the annotation
+            * *width* (``int``) -- image width
+            * *height* (``int``) -- image height
+            * *exif* (``dict``) -- exif information (Orientation)
+
+        :return: converted Annotation
+        :rtype: tuple
+        """
+        annotation = context.get('annotation')
+        item = context.get('item')
+        width = context.get('width')
+        height = context.get('height')
+        if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
+            width, height = (item.height, item.width)
+
+        dw = 1.0 / width
+        dh = 1.0 / height
+
+        if "image" in item.mimetype:
+            polygon_yolo_string_list = list()
+
+            polygons = dl.Polygon.from_segmentation(
+                mask=annotation.geo,
+                label=annotation.label,
+                epsilon=0,
+                max_instances=None
+            )
+            if not isinstance(polygons, list):
+                polygons = [polygons]
+
+            for polygon in polygons:
+                coordinates_list = list()
+                for coordinates in polygon.geo:
+                    coordinates_list.append(f'{coordinates[0] * dw} {coordinates[1] * dh}')
+                coordinates_string = ' '.join(coordinates_list)
+
+                label_id = self.label_to_id_map[annotation.label]
+
+                # <label_id> <x1> <y1> <x2> <y2> <x3> <y3> ...
+                polygon_yolo_string_list.append(f'{label_id} {coordinates_string}')
+
+            yolo_string = '\n'.join(polygon_yolo_string_list)
+            context['yolo_string'] = yolo_string
+
+        elif "video" in item.mimetype:
+            logger.warning('Segmentation annotations are not supported for video items')
 
         return context
