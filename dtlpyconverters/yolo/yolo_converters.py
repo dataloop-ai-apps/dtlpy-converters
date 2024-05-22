@@ -181,18 +181,26 @@ class DataloopToYolo(BaseExportConverter):
         outputs = dict()
         item_yolo_strings = list()
         for i_annotation, annotation in enumerate(annotations.annotations):
+            outs = {
+                "dataset": dataset,
+                "item": item,
+                "width": item.width,
+                "height": item.height,
+                "annotation": annotation,
+                "annotations": annotations
+            }
             if annotation.type == dl.AnnotationType.BOX:
-                outs = {"dataset": dataset,
-                        "item": item,
-                        "width": item.width,
-                        "height": item.height,
-                        "annotation": annotation,
-                        "annotations": annotations}
                 outs = await self.on_annotation_end(
                     **await self.on_box(
                         **await self.on_annotation_start(**outs)))
-                item_yolo_strings.append(outs.get('yolo_string'))
-                outputs[annotation.id] = outs
+            elif annotation.type == dl.AnnotationType.POLYGON:
+                outs = await self.on_annotation_end(
+                    **await self.on_polygon(
+                        **await self.on_annotation_start(**outs)))
+            else:
+                continue  # skip unsupported annotation types
+            item_yolo_strings.append(outs.get('yolo_string'))
+            outputs[annotation.id] = outs
         context['outputs'] = outputs
         name, ext = os.path.splitext(item.name)
         output_filename = os.path.join(to_path, item.dir[1:], name + '.txt')
@@ -227,16 +235,64 @@ class DataloopToYolo(BaseExportConverter):
 
         dw = 1.0 / width
         dh = 1.0 / height
-        x = (annotation.left + annotation.right) / 2.0
-        y = (annotation.top + annotation.bottom) / 2.0
-        w = annotation.right - annotation.left
-        h = annotation.bottom - annotation.top
-        x = x * dw
-        w = w * dw
-        y = y * dh
-        h = h * dh
 
-        label_id = self.label_to_id_map[annotation.label]
-        yolo_string = f'{label_id} {x} {y} {w} {h}'
-        context['yolo_string'] = yolo_string
+        if "image" in item.mimetype:
+            x = (annotation.left + annotation.right) / 2.0
+            y = (annotation.top + annotation.bottom) / 2.0
+            w = annotation.right - annotation.left
+            h = annotation.bottom - annotation.top
+            x = x * dw
+            w = w * dw
+            y = y * dh
+            h = h * dh
+
+            label_id = self.label_to_id_map[annotation.label]
+            yolo_string = f'{label_id} {x} {y} {w} {h}'
+            context['yolo_string'] = yolo_string
+
+        elif "video" in item.mimetype:
+            raise NotImplementedError
+
+        return context
+
+    async def on_polygon(self, **context) -> dict:
+        """
+        Convert from DATALOOP format to YOLO format. Use this as conversion_func param for functions that ask for this param.
+        **Prerequisites**: You must be an *owner* or *developer* to use this method.
+        :param context:
+                See below
+
+        :Keyword Arguments:
+            * *annotation* (``dl.Annotations``) -- the polygon annotations to convert
+            * *item* (``dl.Item``) -- Item of the annotation
+            * *width* (``int``) -- image width
+            * *height* (``int``) -- image height
+            * *exif* (``dict``) -- exif information (Orientation)
+
+        :return: converted Annotation
+        :rtype: tuple
+        """
+        annotation = context.get('annotation')
+        item = context.get('item')
+        width = context.get('width')
+        height = context.get('height')
+        if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
+            width, height = (item.height, item.width)
+
+        dw = 1.0 / width
+        dh = 1.0 / height
+
+        coordinates_list = list()
+        if "image" in item.mimetype:
+            for coordinates in annotation.geo:
+                coordinates_list.append(f"{coordinates[0] * dw} {coordinates[1] * dh}")
+            coordinates_string = " ".join(coordinates_list)
+
+            label_id = self.label_to_id_map[annotation.label]
+            yolo_string = f'{label_id} {coordinates_string}'
+            context['yolo_string'] = yolo_string
+
+        elif "video" in item.mimetype:
+            raise NotImplementedError
+
         return context
