@@ -101,40 +101,13 @@ class YoloToDataloop(BaseImportConverter):
 
         # Parse the annotations and upload them to the item
         annotation_collection = item.annotations.builder()
-        if "image" in item.mimetype:
-            for annotation in lines:
-                annotation_collection.annotations.append(await self.on_annotation(
-                    item=item,
-                    annotation=annotation,
-                    width=width,
-                    height=height
-                ))
-
-        elif "video" in item.mimetype:
-            # Split annotations by object_id
-            frame_annotations_dict = dict()
-            for frame_annotation in lines:
-                frame_annotation_split = frame_annotation.split(' ')
-                frame_num = frame_annotation_split[0]
-                object_id = frame_annotation_split[1]
-
-                if object_id not in frame_annotations_dict:
-                    frame_annotations_dict[object_id] = dict()
-                frame_annotations_dict[object_id][frame_num] = frame_annotation
-
-            for object_id, frame_annotations in frame_annotations_dict.items():
-                sorted_frames = sorted(list(frame_annotations.keys()))
-                sorted_frame_annotations = [frame_annotations[frame] for frame in sorted_frames]
-                annotation_collection.annotations.append(await self.on_annotation(
-                    item=item,
-                    sorted_frame_annotations=sorted_frame_annotations,
-                    width=width,
-                    height=height,
-                    object_id=object_id
-                ))
-
-        else:
-            return  # skip unsupported item types
+        for annotation in lines:
+            annotation_collection.annotations.append(await self.on_annotation(
+                item=item,
+                annotation=annotation,
+                width=width,
+                height=height
+            ))
 
         await item.annotations._async_upload_annotations(annotation_collection)
 
@@ -157,7 +130,7 @@ class YoloToDataloop(BaseImportConverter):
 
             # <label_id> <coordinates>
             label_id = int(line_data[0])
-            coordinates = [float(coordinate) for coordinate in line_data[1:]]
+            coordinates = np.asarray(line_data[1:]).astype(float)
 
             if len(coordinates) == 4:
                 ann_def = self.on_box(
@@ -179,17 +152,14 @@ class YoloToDataloop(BaseImportConverter):
             new_annotation = dl.Annotation.new(annotation_definition=ann_def, item=item)
 
         elif "video" in item.mimetype:
-            object_id = context.get('object_id')
-            sorted_frame_annotations: list = context.get('sorted_frame_annotations')
-
-            # Check first frame info
-            first_frame_annotation = sorted_frame_annotations[0]
-            first_line_data = first_frame_annotation.split(' ')
+            annotation: str = context.get('annotation')
+            line_data = annotation.strip().split(" ")
 
             # <frame_num> <object_id> <label_id> <coordinates>
-            frame_num = int(first_line_data[0])
-            label_id = int(first_line_data[2])
-            coordinates = np.asarray(first_line_data[3:]).astype(float)
+            frame_num = int(line_data[0])
+            object_id = line_data[1]
+            label_id = int(line_data[2])
+            coordinates = np.asarray(line_data[3:]).astype(float)
 
             if len(coordinates) == 4:
                 ann_def = self.on_box(
@@ -205,25 +175,6 @@ class YoloToDataloop(BaseImportConverter):
                     frame_num=frame_num
                 )
 
-                for frame_annotation in sorted_frame_annotations[1:]:
-                    line_data = frame_annotation.strip().split(' ')
-
-                    # <frame_num> <object_id> <label_id> <coordinates>
-                    frame_num = int(line_data[0])
-                    label_id = int(line_data[2])
-                    coordinates = np.asarray(line_data[3:]).astype(float)
-
-                    ann_def = self.on_box(
-                        width=width,
-                        height=height,
-                        label_id=label_id,
-                        coordinates=coordinates,
-                    )
-                    new_annotation.add_frame(
-                        annotation_definition=ann_def,
-                        frame_num=frame_num
-                    )
-
             elif len(coordinates) > 4 and len(coordinates) % 2 == 0:
                 ann_def = self.on_polygon(
                     width=width,
@@ -238,27 +189,8 @@ class YoloToDataloop(BaseImportConverter):
                     frame_num=frame_num
                 )
 
-                for frame_annotation in sorted_frame_annotations[1:]:
-                    line_data = frame_annotation.split(' ')
-
-                    # <frame_num> <object_id> <label_id> <coordinates>
-                    frame_num = int(line_data[0])
-                    label_id = int(line_data[2])
-                    coordinates = np.asarray(line_data[3:]).astype(float)
-
-                    ann_def = self.on_polygon(
-                        width=width,
-                        height=height,
-                        label_id=label_id,
-                        coordinates=coordinates,
-                    )
-                    new_annotation.add_frame(
-                        annotation_definition=ann_def,
-                        frame_num=frame_num
-                    )
-
             else:
-                raise Exception(f'Unsupported video annotation format for: {first_frame_annotation}')
+                raise Exception(f'Unsupported video annotation format for: {line_data}')
 
         else:
             raise Exception(f'Unsupported item type: {item.mimetype}')
@@ -440,18 +372,15 @@ class DataloopToYolo(BaseExportConverter):
         if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
             width, height = (item.height, item.width)
 
-        dw = 1.0 / width
-        dh = 1.0 / height
-
         if "image" in item.mimetype:
             x = (annotation.left + annotation.right) / 2.0
             y = (annotation.top + annotation.bottom) / 2.0
             w = annotation.right - annotation.left
             h = annotation.bottom - annotation.top
-            x = x * dw
-            w = w * dw
-            y = y * dh
-            h = h * dh
+            x = x / width
+            w = w / width
+            y = y / height
+            h = h / height
 
             label_id = self.label_to_id_map[annotation.label]
 
@@ -468,10 +397,10 @@ class DataloopToYolo(BaseExportConverter):
                 y = (frame_annotation.top + frame_annotation.bottom) / 2.0
                 w = frame_annotation.right - frame_annotation.left
                 h = frame_annotation.bottom - frame_annotation.top
-                x = x * dw
-                w = w * dw
-                y = y * dh
-                h = h * dh
+                x = x / width
+                w = w / width
+                y = y / height
+                h = h / height
 
                 frame_num = frame_annotation.frame_num
                 object_id = annotation.object_id
@@ -514,13 +443,10 @@ class DataloopToYolo(BaseExportConverter):
         if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
             width, height = (item.height, item.width)
 
-        dw = 1.0 / width
-        dh = 1.0 / height
-
         if "image" in item.mimetype:
             coordinates_list = list()
             for coordinates in annotation.geo:
-                coordinates_list.append(f'{coordinates[0] * dw} {coordinates[1] * dh}')
+                coordinates_list.append(f'{coordinates[0] / width} {coordinates[1] / height}')
             coordinates_string = ' '.join(coordinates_list)
 
             label_id = self.label_to_id_map[annotation.label]
@@ -536,7 +462,7 @@ class DataloopToYolo(BaseExportConverter):
             for frame_annotation in annotation.frames:
                 coordinates_list = list()
                 for coordinates in annotation.geo:
-                    coordinates_list.append(f'{coordinates[0] * dw} {coordinates[1] * dh}')
+                    coordinates_list.append(f'{coordinates[0] / width} {coordinates[1] / height}')
                 coordinates_string = ' '.join(coordinates_list)
 
                 frame_num = frame_annotation.frame_num
@@ -575,9 +501,6 @@ class DataloopToYolo(BaseExportConverter):
         if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
             width, height = (item.height, item.width)
 
-        dw = 1.0 / width
-        dh = 1.0 / height
-
         if "image" in item.mimetype:
             polygon_yolo_string_list = list()
 
@@ -591,15 +514,16 @@ class DataloopToYolo(BaseExportConverter):
                 polygons = [polygons]
 
             for polygon in polygons:
-                coordinates_list = list()
-                for coordinates in polygon.geo:
-                    coordinates_list.append(f'{coordinates[0] * dw} {coordinates[1] * dh}')
-                coordinates_string = ' '.join(coordinates_list)
-
-                label_id = self.label_to_id_map[annotation.label]
+                annotation._annotation_definition = polygon
+                polygon_yolo_context = await self.on_polygon(
+                    annotation=annotation,
+                    item=item,
+                    width=width,
+                    height=height
+                )
 
                 # <label_id> <x1> <y1> <x2> <y2> <x3> <y3> ...
-                polygon_yolo_string_list.append(f'{label_id} {coordinates_string}')
+                polygon_yolo_string_list.append(polygon_yolo_context.get('yolo_string'))
 
             yolo_string = '\n'.join(polygon_yolo_string_list)
             context['yolo_string'] = yolo_string
