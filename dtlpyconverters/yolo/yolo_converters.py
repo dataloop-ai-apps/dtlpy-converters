@@ -90,6 +90,8 @@ class YoloToDataloop(BaseImportConverter):
                 vid = cv2.VideoCapture(input_filename)
                 height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
                 width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+                fps = vid.get(cv2.CAP_PROP_FPS)
+                item.metadata["fps"] = fps
             else:
                 raise Exception(f'Unsupported item type: {item.mimetype}')
         else:
@@ -98,8 +100,6 @@ class YoloToDataloop(BaseImportConverter):
 
         if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
             width, height = (item.height, item.width)
-
-        # TODO: find how to add FPS
 
         # Parse the annotations and upload them to the item
         annotation_collection = item.annotations.builder()
