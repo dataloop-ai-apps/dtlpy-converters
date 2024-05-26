@@ -470,7 +470,7 @@ class DataloopToYolo(BaseExportConverter):
             polygon_yolo_string_list = list()
 
             frame_annotation: dl.entities.FrameAnnotation
-            for frame_annotation in annotation.frames:
+            for frame_annotation in list(annotation.frames.values()):
                 coordinates_list = list()
                 for coordinates in annotation.geo:
                     coordinates_list.append(f'{coordinates[0] / width} {coordinates[1] / height}')
