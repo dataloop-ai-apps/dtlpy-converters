@@ -36,8 +36,8 @@ class TestYolo(unittest.TestCase):
 
     def test_2_dtlpy_to_yolo(self):
         images_path = 'tmp/yolo/images'
-        to_path = 'tmp/yolo/yolo'
-        from_path = 'tmp/yolo/dtlpy'
+        to_path = 'tmp/yolo/yolo_images'
+        from_path = 'tmp/yolo/dtlpy_images'
 
         conv = DataloopToYolo(output_annotations_path=to_path,
                               input_annotations_path=from_path,
@@ -46,7 +46,7 @@ class TestYolo(unittest.TestCase):
                               dataset=self.dataset)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(conv.convert_dataset())
-        # self.assertEqual()
+        self.assertEqual()
 
     def test_3_yolo_to_dtlpy(self):
         annotations_path = 'examples/yolo/yolo_videos/annotations'
@@ -64,7 +64,6 @@ class TestYolo(unittest.TestCase):
         # self.assertEqual()
 
     def test_4_dtlpy_to_yolo(self):
-        # TODO: Check why dataset labels order doesn't match the labels.txt order
         videos_path = 'tmp/yolo/videos'
         to_path = 'tmp/yolo/yolo_videos'
         from_path = 'tmp/yolo/dtlpy_videos'
