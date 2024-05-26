@@ -99,15 +99,22 @@ class YoloToDataloop(BaseImportConverter):
         if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
             width, height = (item.height, item.width)
 
+        # TODO: find how to add FPS
+
         # Parse the annotations and upload them to the item
         annotation_collection = item.annotations.builder()
         for annotation in lines:
-            annotation_collection.annotations.append(await self.on_annotation(
+            new_annotation = await self.on_annotation(
                 item=item,
                 annotation=annotation,
                 width=width,
                 height=height
-            ))
+            )
+            annotation_collection.add(
+                annotation_definition=new_annotation.annotation_definition,
+                object_id=new_annotation.object_id,
+                frame_num=new_annotation.frame_num
+            )
 
         await item.annotations._async_upload_annotations(annotation_collection)
 
