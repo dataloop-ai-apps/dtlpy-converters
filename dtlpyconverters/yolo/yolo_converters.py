@@ -90,13 +90,17 @@ class YoloToDataloop(BaseImportConverter):
                 vid = cv2.VideoCapture(input_filename)
                 height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
                 width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
-                fps = vid.get(cv2.CAP_PROP_FPS)
-                item.metadata["fps"] = fps
             else:
                 raise Exception(f'Unsupported item type: {item.mimetype}')
         else:
             width = item.width
             height = item.height
+
+        # get itme fps (for videos only)
+        if "video" in item.mimetype and item.fps is None:
+            vid = cv2.VideoCapture(input_filename)
+            fps = vid.get(cv2.CAP_PROP_FPS)
+            item.metadata["fps"] = fps
 
         if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
             width, height = (item.height, item.width)
@@ -113,7 +117,7 @@ class YoloToDataloop(BaseImportConverter):
             annotation_collection.add(
                 annotation_definition=new_annotation.annotation_definition,
                 object_id=new_annotation.object_id,
-                frame_num=new_annotation.frame_num
+                frame_num=new_annotation.frame_num if "video" in item.mimetype else None
             )
 
         await item.annotations._async_upload_annotations(annotation_collection)
