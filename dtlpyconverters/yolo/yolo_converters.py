@@ -53,6 +53,16 @@ class YoloToDataloop(BaseImportConverter):
         for txt_file in files:
             _ = await self.on_item(annotation_filepath=str(txt_file))
 
+    @staticmethod
+    def _get_video_data(input_filename):
+        vid = cv2.VideoCapture(input_filename)
+        width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+        height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        dimensions = (width, height)
+        fps = vid.get(cv2.CAP_PROP_FPS)
+        vid.release()
+        return dimensions, fps
+
     async def on_item(self, **context):
         """
 
@@ -81,31 +91,30 @@ class YoloToDataloop(BaseImportConverter):
             except dl.exceptions.NotFound:
                 raise
 
-        # get item width and height
+        # get item dimensions ([width, height])
         if item.width is None or item.height is None:
             if "image" in item.mimetype:
-                # TODO: open image only once
                 img = Image.open(input_filename)
-                width, height = img.size
+                dimensions = img.size
                 img.close()
             elif "video" in item.mimetype:
-                vid = cv2.VideoCapture(input_filename)
-                height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-                width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+                dimensions, fps = self._get_video_data(input_filename=input_filename)
+                item.metadata["fps"] = fps
             else:
                 raise Exception(f'Unsupported item type: {item.mimetype}')
         else:
-            width = item.width
-            height = item.height
+            dimensions = (item.width, item.height)
 
-        # get itme fps (for videos only)
-        if "video" in item.mimetype and item.fps is None:
-            vid = cv2.VideoCapture(input_filename)
-            fps = vid.get(cv2.CAP_PROP_FPS)
-            item.metadata["fps"] = fps
+            # get item fps (for videos only)
+            if "video" in item.mimetype and item.fps is None:
+                _, fps = self._get_video_data(input_filename=input_filename)
+                item.metadata["fps"] = fps
 
+        # handle exif orientation
         if item.system.get('exif', {}).get('Orientation', 0) in [5, 6, 7, 8]:
-            width, height = (item.height, item.width)
+            height, width = dimensions
+        else:
+            width, height = dimensions
 
         # Parse the annotations and upload them to the item
         annotation_collection = item.annotations.builder()
