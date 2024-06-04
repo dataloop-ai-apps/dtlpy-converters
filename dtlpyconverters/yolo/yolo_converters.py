@@ -84,8 +84,10 @@ class YoloToDataloop(BaseImportConverter):
         # get item width and height
         if item.width is None or item.height is None:
             if "image" in item.mimetype:
-                width = Image.open(input_filename).size[0]
-                height = Image.open(input_filename).size[1]
+                # TODO: open image only once
+                img = Image.open(input_filename)
+                width, height = img.size
+                img.close()
             elif "video" in item.mimetype:
                 vid = cv2.VideoCapture(input_filename)
                 height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
