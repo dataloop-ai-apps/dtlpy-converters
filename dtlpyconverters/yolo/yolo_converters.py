@@ -65,7 +65,7 @@ class YoloToDataloop(BaseImportConverter):
 
     async def on_item(self, **context):
         """
-
+        Converting an item from Yolo format to Dataloop.
         """
         annotation_filepath = context.get('annotation_filepath')
         with open(annotation_filepath, 'r') as f:
@@ -116,24 +116,41 @@ class YoloToDataloop(BaseImportConverter):
         else:
             width, height = dimensions
 
-        # Parse the annotations and upload them to the item
+        # parse the annotations and upload them to the item
         annotation_collection = item.annotations.builder()
         for annotation in lines:
-            new_annotation = await self.on_annotation(
+            annotation_collection.add(**await self.on_annotation(
                 item=item,
                 annotation=annotation,
                 width=width,
                 height=height
-            )
-            annotation_collection.add(
-                annotation_definition=new_annotation.annotation_definition,
-                object_id=new_annotation.object_id,
-                frame_num=new_annotation.frame_num if "video" in item.mimetype else None
-            )
+            ))
 
         await item.annotations._async_upload_annotations(annotation_collection)
 
-    async def on_annotation(self, **context):
+    def _get_annotation_definition(self, width, height, label_id, coordinates):
+        # Box coordinates format: <x> <y> <width> <height>
+        if len(coordinates) == 4:
+            ann_def = self.on_box(
+                width=width,
+                height=height,
+                label_id=label_id,
+                coordinates=coordinates,
+            )
+        # Polygon coordinates format: <x1> <y1> <x2> <y2> <x3> <y3> ... (even number of coordinates)
+        elif len(coordinates) > 4 and len(coordinates) % 2 == 0:
+            ann_def = self.on_polygon(
+                width=width,
+                height=height,
+                label_id=label_id,
+                coordinates=coordinates,
+            )
+        else:
+            ann_def = None
+
+        return ann_def
+
+    async def on_annotation(self, **context) -> dict:
         """
         Convert from YOLO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
 
@@ -154,24 +171,18 @@ class YoloToDataloop(BaseImportConverter):
             label_id = int(line_data[0])
             coordinates = np.asarray(line_data[1:]).astype(float)
 
-            if len(coordinates) == 4:
-                ann_def = self.on_box(
-                    width=width,
-                    height=height,
-                    label_id=label_id,
-                    coordinates=coordinates,
-                )
-            elif len(coordinates) > 4 and len(coordinates) % 2 == 0:
-                ann_def = self.on_polygon(
-                    width=width,
-                    height=height,
-                    label_id=label_id,
-                    coordinates=coordinates,
-                )
+            ann_def = self._get_annotation_definition(
+                width=width,
+                height=height,
+                label_id=label_id,
+                coordinates=coordinates
+            )
+            if ann_def is not None:
+                result = {
+                    "annotation_definition": ann_def
+                }
             else:
                 raise Exception(f'Unsupported image annotation format: {annotation}')
-
-            new_annotation = dl.Annotation.new(annotation_definition=ann_def, item=item)
 
         elif "video" in item.mimetype:
             annotation: str = context.get('annotation')
@@ -183,46 +194,27 @@ class YoloToDataloop(BaseImportConverter):
             label_id = int(line_data[2])
             coordinates = np.asarray(line_data[3:]).astype(float)
 
-            if len(coordinates) == 4:
-                ann_def = self.on_box(
-                    width=width,
-                    height=height,
-                    label_id=label_id,
-                    coordinates=coordinates,
-                )
-                new_annotation = dl.Annotation.new(
-                    annotation_definition=ann_def,
-                    item=item,
-                    object_id=object_id,
-                    frame_num=frame_num
-                )
-
-            elif len(coordinates) > 4 and len(coordinates) % 2 == 0:
-                ann_def = self.on_polygon(
-                    width=width,
-                    height=height,
-                    label_id=label_id,
-                    coordinates=coordinates,
-                )
-                new_annotation = dl.Annotation.new(
-                    annotation_definition=ann_def,
-                    item=item,
-                    object_id=object_id,
-                    frame_num=frame_num
-                )
-
+            ann_def = self._get_annotation_definition(
+                width=width,
+                height=height,
+                label_id=label_id,
+                coordinates=coordinates
+            )
+            if ann_def is not None:
+                result = {
+                    "annotation_definition": ann_def,
+                    "object_id": object_id,
+                    "frame_num": frame_num
+                }
             else:
-                raise Exception(f'Unsupported video annotation format for: {line_data}')
+                raise Exception(f'Unsupported video annotation format for: {annotation}')
 
         else:
             raise Exception(f'Unsupported item type: {item.mimetype}')
 
-        return new_annotation
+        return result
 
     def on_box(self, **context):
-        """
-
-        """
         width = context.get('width')
         height = context.get('height')
         label_id = context.get('label_id')
@@ -248,9 +240,6 @@ class YoloToDataloop(BaseImportConverter):
         return ann_def
 
     def on_polygon(self, **context):
-        """
-
-        """
         width = context.get('width')
         height = context.get('height')
         label_id = context.get('label_id')
@@ -268,9 +257,6 @@ class YoloToDataloop(BaseImportConverter):
 
     # TODO: Check how to define customizable flag for this option
     def on_segmentation(self, **context):
-        """
-
-        """
         width = context.get('width')
         height = context.get('height')
         label_id = context.get('label_id')
