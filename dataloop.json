@@ -1,7 +1,7 @@
 {
   "name": "dtlpy-converters",
   "displayName": "Dataloop Converters",
-  "description": "Dataloop Converters Application",
+  "description": "Dataloop Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
   "attributes": {
     "Category": "Application",
     "Provider": "Dataloop",
