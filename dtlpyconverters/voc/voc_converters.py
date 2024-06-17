@@ -235,7 +235,18 @@ class VocToDataloop(BaseImportConverter):
                 logger.warning(f'could find local image for annotation file: {ann_filepath}')
                 item = self.dataset.items.get(f'/{remote_path}')
             else:
-                item = self.dataset.items.upload(img_filepath)
+                uploader = dl.repositories.uploader.Uploader(items_repository=self.dataset.items)
+                item = await uploader._Uploader__single_async_upload(
+                    filepath=img_filepath,
+                    remote_path='/',
+                    uploaded_filename=f'{os.path.basename(img_filepath)}',
+                    last_try=True,
+                    mode='skip',
+                    item_metadata=dict(),
+                    callback=None,
+                    item_description=None
+                )
+                item = item[0]
         else:
             item = self.dataset.items.get(f'/{remote_path}')
         with open(ann_filepath, "r") as f:
@@ -253,7 +264,7 @@ class VocToDataloop(BaseImportConverter):
                                                    'voc_annotation': voc_annotation})
 
             annotation_collection.annotations.append(out_args.get('dtlpy_ann'))
-        item.annotations.upload(annotation_collection)
+        await item.annotations._async_upload_annotations(annotation_collection)
 
     async def on_annotation(self, **kwargs):
         """
