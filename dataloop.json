@@ -21,12 +21,12 @@
       "Semantic Segmentation"
     ]
   },
-  "version": "3.0.4",
+  "version": "3.0.5",
   "scope": "public",
   "codebase": {
     "type": "git",
     "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
-    "gitTag": "3.0.4"
+    "gitTag": "3.0.5"
   },
   "components": {
     "modules": [
