@@ -1,0 +1,58 @@
+[
+	{
+		"id": "65ef0b8c44c50c1191530cd9",
+		"datasetId": "65eefd3946d6199c597b57d7",
+		"itemId": "65eeff6cec5111275848c4a6",
+		"url": "https://rc-gate.dataloop.ai/api/v1/annotations/65ef0b8c44c50c1191530cd9",
+		"item": "https://rc-gate.dataloop.ai/api/v1/items/65eeff6cec5111275848c4a6",
+		"dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/65eefd3946d6199c597b57d7",
+		"type": "subtitle",
+		"label": "No Speaker",
+		"coordinates": {
+			"text": "None: and the way we access it is changing"
+		},
+		"metadata": {
+			"system": {
+				"automated": true,
+				"endFrame": 0,
+				"endTime": 4.3,
+				"frame": 0,
+				"startTime": 2.5
+			}
+		},
+		"creator": "or@dataloop.ai",
+		"createdAt": "2024-03-11T13:47:56.065Z",
+		"updatedBy": "or@dataloop.ai",
+		"updatedAt": "2024-03-11T13:47:56.065Z",
+		"hash": "400da43efd7ee9c5f7bc5d2f6b3511029e1bbf20",
+		"source": "sdk"
+	},
+	{
+		"id": "65ef0b8c44c50c5eff530cd8",
+		"datasetId": "65eefd3946d6199c597b57d7",
+		"itemId": "65eeff6cec5111275848c4a6",
+		"url": "https://rc-gate.dataloop.ai/api/v1/annotations/65ef0b8c44c50c5eff530cd8",
+		"item": "https://rc-gate.dataloop.ai/api/v1/items/65eeff6cec5111275848c4a6",
+		"dataset": "https://rc-gate.dataloop.ai/api/v1/datasets/65eefd3946d6199c597b57d7",
+		"type": "subtitle",
+		"label": "No Speaker",
+		"coordinates": {
+			"text": "None: The Web is always changing"
+		},
+		"metadata": {
+			"system": {
+				"automated": true,
+				"endFrame": 0,
+				"endTime": 2,
+				"frame": 0,
+				"startTime": 0.5
+			}
+		},
+		"creator": "or@dataloop.ai",
+		"createdAt": "2024-03-11T13:47:56.065Z",
+		"updatedBy": "or@dataloop.ai",
+		"updatedAt": "2024-03-11T13:47:56.065Z",
+		"hash": "b4b095fbac50d9ebe2b7a31d96c755ea81ede424",
+		"source": "sdk"
+	}
+]

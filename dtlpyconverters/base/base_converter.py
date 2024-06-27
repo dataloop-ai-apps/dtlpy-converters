@@ -149,7 +149,7 @@ class BaseImportConverter:
                  dataset: dl.Dataset,
                  input_annotations_path,
                  output_annotations_path=None,
-                 input_items_path=None,
+                 input_items_path: str = None,
                  upload_items=False,
                  add_labels_to_recipe=True,
                  concurrency=6,
