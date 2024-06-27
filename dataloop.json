@@ -1,11 +1,25 @@
 {
   "name": "dtlpy-converters",
   "displayName": "Dataloop Converters",
-  "description": "Dataloop Converters Application",
-   "attributes": {
-    "Provider": "Dataloop",
+  "description": "Dataloop Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
+  "attributes": {
     "Category": "Application",
-    "Application Type": "Function"
+    "Provider": "Dataloop",
+    "Application Type": "Function",
+    "Converters": [
+      "COCO",
+      "YOLO",
+      "VOC"
+    ],
+    "Media Type": [
+      "Image",
+      "Video"
+    ],
+    "Annotation Type": [
+      "Bounding Box",
+      "Polygon",
+      "Semantic Segmentation"
+    ]
   },
   "version": "3.0.4",
   "scope": "public",
