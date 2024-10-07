@@ -47,17 +47,20 @@ class DataloopConverters(dl.BaseServiceRunner):
                 raise e
         return loop
 
-    def _convert_dataset(self, conv, conv_type, output_annotations_path, timestamp, input_annotations_path):
+    def _convert_dataset(self, conv, conv_type, output_annotations_path, timestamp, input_annotations_path,
+                         export_locally):
         zip_path = ''
         loop = self._get_event_loop()
         try:
             loop.run_until_complete(conv.convert_dataset())
             zip_path = os.path.join(os.getcwd(), '{}_{}.zip'.format(conv_type, timestamp))
             self._zip_folder(folder_path=output_annotations_path, output_path=zip_path)
-            item = conv.dataset.items.upload(local_path=zip_path,
-                                             remote_path='/.dataloop/{}'.format(conv_type))
-
-            return item.id
+            if export_locally is False:
+                item = conv.dataset.items.upload(local_path=zip_path,
+                                                 remote_path='/.dataloop/{}'.format(conv_type))
+                return item.id
+            else:
+                return zip_path
         except Exception as e:
             raise e
         finally:
@@ -65,15 +68,17 @@ class DataloopConverters(dl.BaseServiceRunner):
                 shutil.rmtree(output_annotations_path)
             if os.path.exists(input_annotations_path):
                 shutil.rmtree(input_annotations_path)
-            if os.path.exists(zip_path):
+            if os.path.exists(zip_path) and export_locally is False:
                 os.remove(zip_path)
 
-    def dataloop_to_coco(self, dataset: dl.Dataset, query=None, download_items=False, download_annotations=True):
+    def dataloop_to_coco(self, dataset: dl.Dataset, query=None, download_items=False, download_annotations=False,
+                         export_locally=False):
         """
         :param dataset: dataloop dataset
         :param query: dataloop dql
         :param download_items: bool download items
         :param download_annotations: bool download annotations
+        :param export_locally: bool export locally
         :return: item id
         """
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
@@ -86,15 +91,18 @@ class DataloopConverters(dl.BaseServiceRunner):
                                        conv_type='coco',
                                        output_annotations_path=output_annotations_path,
                                        timestamp=timestamp,
-                                       input_annotations_path=input_annotations_path)
+                                       input_annotations_path=input_annotations_path,
+                                       export_locally=export_locally)
         return output
 
-    def dataloop_to_yolo(self, dataset: dl.Dataset, query=None, download_items=False, download_annotations=True):
+    def dataloop_to_yolo(self, dataset: dl.Dataset, query=None, download_items=False, download_annotations=False,
+                         export_locally=False):
         """
         :param dataset: dataloop dataset
         :param query: dataloop dql
         :param download_items: bool download items
         :param download_annotations: bool download annotations
+        :param export_locally: bool export locally
         :return: item id
         """
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
@@ -107,15 +115,18 @@ class DataloopConverters(dl.BaseServiceRunner):
                                        conv_type='yolo',
                                        output_annotations_path=output_annotations_path,
                                        timestamp=timestamp,
-                                       input_annotations_path=input_annotations_path)
+                                       input_annotations_path=input_annotations_path,
+                                       export_locally=export_locally)
         return output
 
-    def dataloop_to_voc(self, dataset: dl.Dataset, query=None, download_items=False, download_annotations=True):
+    def dataloop_to_voc(self, dataset: dl.Dataset, query=None,
+                        download_items=False, download_annotations=False, export_locally=False):
         """
         :param dataset: dataloop dataset
         :param query: dataloop dql
         :param download_items: bool download items
         :param download_annotations: bool download annotations
+        :param export_locally: bool export locally
         :return: item id
         """
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
@@ -129,5 +140,6 @@ class DataloopConverters(dl.BaseServiceRunner):
                                        conv_type='voc',
                                        output_annotations_path=output_annotations_path,
                                        timestamp=timestamp,
-                                       input_annotations_path=input_annotations_path)
+                                       input_annotations_path=input_annotations_path,
+                                       export_locally=export_locally)
         return output
