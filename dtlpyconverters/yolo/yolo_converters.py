@@ -7,6 +7,7 @@ import time
 import json
 import os
 import cv2
+import shutil
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -314,6 +315,8 @@ class DataloopToYolo(BaseExportConverter):
                 )
             )
         logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
+        if self.download_annotations is False:
+            shutil.rmtree(path=json_path, ignore_errors=True)
         return context
 
     async def on_item(self, **context) -> dict:
