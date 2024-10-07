@@ -282,7 +282,6 @@ class DataloopToYolo(BaseExportConverter):
 
     async def on_dataset(self, **context) -> dict:
         """
-
         :param: local_path: directory to save annotations to
         :param context:
         :return:
@@ -291,6 +290,8 @@ class DataloopToYolo(BaseExportConverter):
         json_path = Path(from_path).joinpath('json')
         files = list(json_path.rglob('*.json'))
         self.label_to_id_map = self.dataset.instance_map
+        if isinstance(self.label_to_id_map, dict) is True and len(self.label_to_id_map) == 0:
+            raise RuntimeError('No labels found in the dataset!')
         os.makedirs(self.output_annotations_path, exist_ok=True)
         sorted_labels = [k for k, v in sorted(self.label_to_id_map.items(), key=lambda item: item[1])]
         with open(os.path.join(self.output_annotations_path, 'labels.txt'), 'w') as f:
@@ -315,8 +316,14 @@ class DataloopToYolo(BaseExportConverter):
                 )
             )
         logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
+
         if self.download_annotations is False:
             shutil.rmtree(path=json_path, ignore_errors=True)
+
+        if self.download_items is True:
+            self.dataset.items.download(local_path=self.input_annotations_path,
+                                        filters=self.filters,
+                                        include_annotations_in_output=False)
         return context
 
     async def on_item(self, **context) -> dict:

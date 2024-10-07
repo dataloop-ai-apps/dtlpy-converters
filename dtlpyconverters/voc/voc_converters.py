@@ -6,6 +6,7 @@ import logging
 import tqdm
 import json
 import os
+import shutil
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -64,14 +65,8 @@ class DataloopToVoc(BaseExportConverter):
         self.to_path_anns = os.path.join(self.output_annotations_path, 'annotations')
         self.to_path_masks = os.path.join(self.output_annotations_path, 'segmentation_class')
 
-        if self.download_annotations:
-            self.input_annotations_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
-            json_path = Path(self.input_annotations_path).joinpath('json')
-        else:
-            json_path = Path(self.input_annotations_path)
-        if self.download_items:
-            self.dataset.items.download(local_path=self.output_items_path)
-
+        from_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
+        json_path = Path(from_path).joinpath('json')
         files = list(json_path.rglob('*.json'))
         self.pbar = tqdm.tqdm(total=len(files))
         for annotation_json_filepath in files:
@@ -90,6 +85,13 @@ class DataloopToVoc(BaseExportConverter):
                     )
                 )
 
+        if self.download_annotations is False:
+            shutil.rmtree(path=json_path, ignore_errors=True)
+
+        if self.download_items is True:
+            self.dataset.items.download(local_path=self.input_annotations_path,
+                                        filters=self.filters,
+                                        include_annotations_in_output=False)
         return kwargs
 
     async def on_dataset_end(self, **kwargs):
