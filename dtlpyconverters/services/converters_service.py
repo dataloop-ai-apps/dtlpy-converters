@@ -63,7 +63,7 @@ class DataloopConverters(dl.BaseServiceRunner):
         finally:
             if os.path.exists(output_annotations_path):
                 shutil.rmtree(output_annotations_path)
-            if os.path.exists(input_annotations_path): # TODO: Should we remove the input folder?
+            if os.path.exists(input_annotations_path):
                 shutil.rmtree(input_annotations_path)
             if os.path.exists(zip_path):
                 os.remove(zip_path)
