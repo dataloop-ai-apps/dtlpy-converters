@@ -7,7 +7,6 @@ import time
 import json
 import os
 import cv2
-import shutil
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -15,6 +14,7 @@ logger = logging.getLogger(name='dtlpy')
 
 
 class YoloToDataloop(BaseImportConverter):
+
     def __init__(self,
                  dataset: dl.Dataset,
                  input_annotations_path,
@@ -276,9 +276,41 @@ class YoloToDataloop(BaseImportConverter):
 
 
 class DataloopToYolo(BaseExportConverter):
-    """
-    Annotation Converter
-    """
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 output_annotations_path,
+                 input_annotations_path=None,
+                 output_items_path=None,
+                 filters: dl.Filters = None,
+                 download_annotations=True,
+                 download_items=False,
+                 concurrency=6,
+                 return_error_filepath=False):
+        """
+        Convert Dataloop Dataset annotation to YOLO format.
+
+        :param dataset: dl.Dataset entity to convert
+        :param output_annotations_path: where to save the converted annotations json
+        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param filters: dl.Filters object to filter the items from dataset
+        :param download_items: download the images with the converted annotations
+        :param download_annotations: download annotations from Dataloop or use local
+        :return:
+        """
+        if download_items:
+            logger.warning("The flag 'download_items' is not supported for this converter")
+        # global vars
+        super(DataloopToYolo, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            output_items_path=output_items_path,
+            input_annotations_path=input_annotations_path,
+            filters=filters,
+            download_annotations=download_annotations,
+            download_items=download_items,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
     async def on_dataset(self, **context) -> dict:
         """
@@ -286,11 +318,15 @@ class DataloopToYolo(BaseExportConverter):
         :param context:
         :return:
         """
-        from_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
-        json_path = Path(from_path).joinpath('json')
+        if self.download_annotations:
+            self.dataset.download_annotations(local_path=self.input_annotations_path,
+                                              filters=self.filters)
+            json_path = Path(self.input_annotations_path).joinpath('json')
+        else:
+            json_path = Path(self.input_annotations_path)
         files = list(json_path.rglob('*.json'))
         self.label_to_id_map = self.dataset.instance_map
-        if isinstance(self.label_to_id_map, dict) is True and len(self.label_to_id_map) == 0:
+        if isinstance(self.label_to_id_map, dict) and len(self.label_to_id_map) == 0:
             raise RuntimeError('No labels found in the dataset!')
         os.makedirs(self.output_annotations_path, exist_ok=True)
         sorted_labels = [k for k, v in sorted(self.label_to_id_map.items(), key=lambda item: item[1])]
@@ -316,14 +352,6 @@ class DataloopToYolo(BaseExportConverter):
                 )
             )
         logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
-
-        if self.download_annotations is False:
-            shutil.rmtree(path=json_path, ignore_errors=True)
-
-        if self.download_items is True:
-            self.dataset.items.download(local_path=self.input_annotations_path,
-                                        filters=self.filters,
-                                        include_annotations_in_output=False)
         return context
 
     async def on_item(self, **context) -> dict:

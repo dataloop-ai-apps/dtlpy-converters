@@ -37,8 +37,8 @@ class ConvertersUploader(dl.BaseServiceRunner):
         conv = coco_converters.CocoToDataloop(dataset=dataset,
                                               input_annotations_path=input_annotations_path,
                                               input_items_path=input_items_path,
-                                              upload_items=upload_items
-                                              )
+                                              upload_items=upload_items)
+
         loop = self._get_event_loop()
         if annotation_options is None:
             annotation_options = [dl.AnnotationType.BOX]

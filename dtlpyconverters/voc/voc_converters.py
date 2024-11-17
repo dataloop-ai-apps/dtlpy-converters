@@ -6,7 +6,6 @@ import logging
 import tqdm
 import json
 import os
-import shutil
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -25,7 +24,7 @@ class DataloopToVoc(BaseExportConverter):
                  concurrency=6,
                  return_error_filepath=False):
         """
-        Convert Dataloop Dataset annotation to COCO format.
+        Convert Dataloop Dataset annotation to VOC format.
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
@@ -35,6 +34,8 @@ class DataloopToVoc(BaseExportConverter):
         :param download_annotations: download annotations from Dataloop or use local
         :return:
         """
+        if download_items:
+            logger.warning("The flag 'download_items' is not supported for this converter")
         # global vars
         super(DataloopToVoc, self).__init__(
             dataset=dataset,
@@ -65,8 +66,12 @@ class DataloopToVoc(BaseExportConverter):
         self.to_path_anns = os.path.join(self.output_annotations_path, 'annotations')
         self.to_path_masks = os.path.join(self.output_annotations_path, 'segmentation_class')
 
-        from_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
-        json_path = Path(from_path).joinpath('json')
+        if self.download_annotations:
+            self.dataset.download_annotations(local_path=self.input_annotations_path,
+                                              filters=self.filters)
+            json_path = Path(self.input_annotations_path).joinpath('json')
+        else:
+            json_path = Path(self.input_annotations_path)
         files = list(json_path.rglob('*.json'))
         self.pbar = tqdm.tqdm(total=len(files))
         for annotation_json_filepath in files:
@@ -85,13 +90,6 @@ class DataloopToVoc(BaseExportConverter):
                     )
                 )
 
-        if self.download_annotations is False:
-            shutil.rmtree(path=json_path, ignore_errors=True)
-
-        if self.download_items is True:
-            self.dataset.items.download(local_path=self.input_annotations_path,
-                                        filters=self.filters,
-                                        include_annotations_in_output=False)
         return kwargs
 
     async def on_dataset_end(self, **kwargs):

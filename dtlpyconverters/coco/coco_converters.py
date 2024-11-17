@@ -7,7 +7,6 @@ import logging
 import tqdm
 import json
 import os
-import shutil
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -78,6 +77,8 @@ class DataloopToCoco(BaseExportConverter):
         :param download_annotations: download annotations from Dataloop or use local
         :return:
         """
+        if download_items:
+            logger.warning("The flag 'download_items' is not supported for this converter")
         # global vars
         super(DataloopToCoco, self).__init__(
             dataset=dataset,
@@ -146,8 +147,12 @@ class DataloopToCoco(BaseExportConverter):
         Will be called after on_dataset_start and before on_dataset_end
         """
         kwargs = await self.on_dataset_start(**kwargs)
-        from_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
-        json_path = Path(from_path).joinpath('json')
+        if self.download_annotations:
+            self.dataset.download_annotations(local_path=self.input_annotations_path,
+                                              filters=self.filters)
+            json_path = Path(self.input_annotations_path).joinpath('json')
+        else:
+            json_path = Path(self.input_annotations_path)
         files = list(json_path.rglob('*.json'))
         self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.dataset.instance_map,
                                                                                 self.dataset.recipes.list()[0])}
@@ -166,14 +171,6 @@ class DataloopToCoco(BaseExportConverter):
                                                             annotations=annotations)))
         await asyncio.gather(*futures)
         kwargs = await self.on_dataset_end(**kwargs)
-
-        if self.download_annotations is False:
-            shutil.rmtree(path=json_path, ignore_errors=True)
-
-        if self.download_items is True:
-            self.dataset.items.download(local_path=self.input_annotations_path,
-                                        filters=self.filters,
-                                        include_annotations_in_output=False)
         return kwargs
 
     async def on_dataset_end(self, **kwargs):

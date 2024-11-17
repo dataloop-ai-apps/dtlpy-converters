@@ -10,8 +10,8 @@ filters = dl.Filters()
 query = filters.prepare()
 
 # Convert dataset to COCO
-coco_zip_filepath = converter.dataloop_to_coco(dataset=dataset, query=query, export_locally=True)
+coco_zip_id = converter.dataloop_to_coco(dataset=dataset, query=query)
 # Convert dataset to yolo
-yolo_zip_filepath = converter.dataloop_to_yolo(dataset=dataset, query=query, export_locally=True)
+yolo_zip_id = converter.dataloop_to_yolo(dataset=dataset, query=query)
 # Convert dataset to VOC
-voc_zip_filepath = converter.dataloop_to_voc(dataset=dataset, query=query, export_locally=True)
+voc_zip_id = converter.dataloop_to_voc(dataset=dataset, query=query)
