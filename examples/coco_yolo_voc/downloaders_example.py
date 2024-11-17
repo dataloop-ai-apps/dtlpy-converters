@@ -7,7 +7,6 @@ loop = converter._get_event_loop()
 
 # DQL Query is optional
 filters = dl.Filters()
-query = filters.prepare()
 
 # Convert dataset to COCO
 coco_dataset = dl.datasets.get(dataset_id='')
