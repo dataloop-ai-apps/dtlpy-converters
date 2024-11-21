@@ -14,6 +14,7 @@ logger = logging.getLogger(name='dtlpy')
 
 
 class YoloToDataloop(BaseImportConverter):
+
     def __init__(self,
                  dataset: dl.Dataset,
                  input_annotations_path,
@@ -275,21 +276,59 @@ class YoloToDataloop(BaseImportConverter):
 
 
 class DataloopToYolo(BaseExportConverter):
-    """
-    Annotation Converter
-    """
+    def __init__(self,
+                 dataset: dl.Dataset,
+                 output_annotations_path,
+                 output_items_path=None,
+                 input_annotations_path=None,
+                 filters: dl.Filters = None,
+                 download_annotations=True,
+                 download_items=False,
+                 concurrency=6,
+                 return_error_filepath=False):
+        """
+        Convert Dataloop Dataset annotation to YOLO format.
+
+        :param dataset: dl.Dataset entity to convert
+        :param output_annotations_path: where to save the converted annotations json
+        :param output_items_path: where to save the downloaded items
+        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param filters: dl.Filters object to filter the items from dataset
+        :param download_items: download the images with the converted annotations
+        :param download_annotations: download annotations from Dataloop or use local
+        :return:
+        """
+        # global vars
+        super(DataloopToYolo, self).__init__(
+            dataset=dataset,
+            output_annotations_path=output_annotations_path,
+            output_items_path=output_items_path,
+            input_annotations_path=input_annotations_path,
+            filters=filters,
+            download_annotations=download_annotations,
+            download_items=download_items,
+            concurrency=concurrency,
+            return_error_filepath=return_error_filepath,
+        )
 
     async def on_dataset(self, **context) -> dict:
         """
-
-        :param: local_path: directory to save annotations to
-        :param context:
-        :return:
+        Callback to tun the conversion on a dataset.
+        Will be called after on_dataset_start and before on_dataset_end.
         """
-        from_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
-        json_path = Path(from_path).joinpath('json')
+        if self.download_annotations:
+            self.dataset.download_annotations(local_path=self.input_annotations_path,
+                                              filters=self.filters)
+            json_path = Path(self.input_annotations_path).joinpath('json')
+        else:
+            json_path = Path(self.input_annotations_path)
+        if self.download_items:
+            self.dataset.items.download(local_path=self.output_items_path)
+
         files = list(json_path.rglob('*.json'))
         self.label_to_id_map = self.dataset.instance_map
+        if isinstance(self.label_to_id_map, dict) and len(self.label_to_id_map) == 0:
+            raise RuntimeError('No labels found in the dataset!')
         os.makedirs(self.output_annotations_path, exist_ok=True)
         sorted_labels = [k for k, v in sorted(self.label_to_id_map.items(), key=lambda item: item[1])]
         with open(os.path.join(self.output_annotations_path, 'labels.txt'), 'w') as f:

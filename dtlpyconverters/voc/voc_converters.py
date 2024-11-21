@@ -16,18 +16,19 @@ class DataloopToVoc(BaseExportConverter):
     def __init__(self,
                  dataset: dl.Dataset,
                  output_annotations_path,
-                 input_annotations_path=None,
                  output_items_path=None,
+                 input_annotations_path=None,
                  filters: dl.Filters = None,
                  download_annotations=True,
                  download_items=False,
                  concurrency=6,
                  return_error_filepath=False):
         """
-        Convert Dataloop Dataset annotation to COCO format.
+        Convert Dataloop Dataset annotation to VOC format.
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
+        :param output_items_path: where to save the downloaded items
         :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
@@ -65,7 +66,8 @@ class DataloopToVoc(BaseExportConverter):
         self.to_path_masks = os.path.join(self.output_annotations_path, 'segmentation_class')
 
         if self.download_annotations:
-            self.input_annotations_path = self.dataset.download_annotations(local_path=self.input_annotations_path)
+            self.dataset.download_annotations(local_path=self.input_annotations_path,
+                                              filters=self.filters)
             json_path = Path(self.input_annotations_path).joinpath('json')
         else:
             json_path = Path(self.input_annotations_path)

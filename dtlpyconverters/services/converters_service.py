@@ -77,7 +77,8 @@ class DataloopConverters(dl.BaseServiceRunner):
         :return: item id
         """
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
-        conv = coco_converters.DataloopToCoco(output_annotations_path=output_annotations_path,
+        conv = coco_converters.DataloopToCoco(input_annotations_path=input_annotations_path,
+                                              output_annotations_path=output_annotations_path,
                                               download_items=download_items,
                                               download_annotations=download_annotations,
                                               filters=filters,
@@ -98,7 +99,8 @@ class DataloopConverters(dl.BaseServiceRunner):
         :return: item id
         """
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
-        conv = yolo_converters.DataloopToYolo(output_annotations_path=output_annotations_path,
+        conv = yolo_converters.DataloopToYolo(input_annotations_path=input_annotations_path,
+                                              output_annotations_path=output_annotations_path,
                                               download_items=download_items,
                                               download_annotations=download_annotations,
                                               filters=filters,
@@ -119,7 +121,8 @@ class DataloopConverters(dl.BaseServiceRunner):
         :return: item id
         """
         filters, timestamp, output_annotations_path, input_annotations_path = self._gen_converter_inputs(query)
-        conv = voc_converters.DataloopToVoc(output_annotations_path=output_annotations_path,
+        conv = voc_converters.DataloopToVoc(input_annotations_path=input_annotations_path,
+                                            output_annotations_path=output_annotations_path,
                                             download_items=download_items,
                                             download_annotations=download_annotations,
                                             filters=filters,
