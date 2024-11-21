@@ -60,6 +60,7 @@ class DataloopToCoco(BaseExportConverter):
     def __init__(self,
                  dataset: dl.Dataset,
                  output_annotations_path,
+                 output_items_path=None,
                  input_annotations_path=None,
                  filters: dl.Filters = None,
                  download_annotations=True,
@@ -71,18 +72,18 @@ class DataloopToCoco(BaseExportConverter):
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
+        :param output_items_path: where to save the downloaded items
         :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
         :param download_annotations: download annotations from Dataloop or use local
         :return:
         """
-        if download_items:
-            logger.warning("The flag 'download_items' is not supported for this converter")
         # global vars
         super(DataloopToCoco, self).__init__(
             dataset=dataset,
             output_annotations_path=output_annotations_path,
+            output_items_path=output_items_path,
             input_annotations_path=input_annotations_path,
             filters=filters,
             download_annotations=download_annotations,
@@ -144,7 +145,7 @@ class DataloopToCoco(BaseExportConverter):
     async def on_dataset(self, **kwargs):
         """
         Callback to tun the conversion on a dataset.
-        Will be called after on_dataset_start and before on_dataset_end
+        Will be called after on_dataset_start and before on_dataset_end.
         """
         kwargs = await self.on_dataset_start(**kwargs)
         if self.download_annotations:
@@ -153,6 +154,9 @@ class DataloopToCoco(BaseExportConverter):
             json_path = Path(self.input_annotations_path).joinpath('json')
         else:
             json_path = Path(self.input_annotations_path)
+        if self.download_items:
+            self.dataset.items.download(local_path=self.output_items_path)
+
         files = list(json_path.rglob('*.json'))
         self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.dataset.instance_map,
                                                                                 self.dataset.recipes.list()[0])}
@@ -370,8 +374,11 @@ class DataloopToCoco(BaseExportConverter):
             ann["iscrowd"] = iscrowd
             if keypoints is not None:
                 ann["keypoints"] = keypoints
-            label = annotation.label
-            ann['category_id'] = self.dataset.instance_map[label]
+            category = annotation.label.split('.')[-1]
+            try:
+                ann['category_id'] = self.categories[category]['id']
+            except KeyError:
+                raise KeyError(f"Category {category} not found in dataset for label {annotation.label}")
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
             self.annotations[annotation.id] = ann
@@ -423,7 +430,11 @@ class DataloopToCoco(BaseExportConverter):
             ann["iscrowd"] = iscrowd
             if keypoints is not None:
                 ann["keypoints"] = keypoints
-            ann['category_id'] = self.categories[annotation.label]['id']
+            category = annotation.label.split('.')[-1]
+            try:
+                ann['category_id'] = self.categories[category]['id']
+            except KeyError:
+                raise KeyError(f"Category {category} not found in dataset for label {annotation.label}")
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
             self.annotations[annotation.id] = ann
@@ -476,11 +487,11 @@ class DataloopToCoco(BaseExportConverter):
                 ann["keypoints"] = keypoints
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
+            category = annotation.label.split('.')[-1]
             try:
-                super_category = annotation.label.split('.')[-1]
-                ann['category_id'] = self.categories[super_category]['id']
-            except KeyError as e:
-                raise KeyError('Category {!r} not found in dataset'.format(annotation.label))
+                ann['category_id'] = self.categories[category]['id']
+            except KeyError:
+                raise KeyError(f"Category {category} not found in dataset for label {annotation.label}")
             self.annotations[annotation.id] = ann
             return kwargs
 

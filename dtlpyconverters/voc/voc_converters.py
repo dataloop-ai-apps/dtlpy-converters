@@ -16,8 +16,8 @@ class DataloopToVoc(BaseExportConverter):
     def __init__(self,
                  dataset: dl.Dataset,
                  output_annotations_path,
-                 input_annotations_path=None,
                  output_items_path=None,
+                 input_annotations_path=None,
                  filters: dl.Filters = None,
                  download_annotations=True,
                  download_items=False,
@@ -28,14 +28,13 @@ class DataloopToVoc(BaseExportConverter):
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
+        :param output_items_path: where to save the downloaded items
         :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
         :param download_annotations: download annotations from Dataloop or use local
         :return:
         """
-        if download_items:
-            logger.warning("The flag 'download_items' is not supported for this converter")
         # global vars
         super(DataloopToVoc, self).__init__(
             dataset=dataset,
@@ -72,6 +71,9 @@ class DataloopToVoc(BaseExportConverter):
             json_path = Path(self.input_annotations_path).joinpath('json')
         else:
             json_path = Path(self.input_annotations_path)
+        if self.download_items:
+            self.dataset.items.download(local_path=self.output_items_path)
+
         files = list(json_path.rglob('*.json'))
         self.pbar = tqdm.tqdm(total=len(files))
         for annotation_json_filepath in files:

@@ -22,15 +22,18 @@ class BaseExportConverter:
                  download_items=False,
                  concurrency=6,
                  return_error_filepath=False):
+        if output_items_path is None:
+            output_items_path = output_annotations_path
         if input_annotations_path is None:
             input_annotations_path = output_annotations_path
+
         self.dataset = dataset
         self.output_annotations_path = output_annotations_path
+        self.output_items_path = output_items_path
         self.input_annotations_path = input_annotations_path
         self.filters = filters
-        self.download_items = download_items
-        self.output_items_path = output_items_path
         self.download_annotations = download_annotations
+        self.download_items = download_items
         self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
 
@@ -154,13 +157,16 @@ class BaseImportConverter:
                  add_labels_to_recipe=True,
                  concurrency=6,
                  return_error_filepath=False):
-        if input_annotations_path is None:
-            input_annotations_path = output_annotations_path
+        if output_annotations_path is None:
+            output_annotations_path = input_annotations_path
+        if input_items_path is None:
+            input_items_path = input_annotations_path
+
         self.dataset = dataset
+        self.input_annotations_path = input_annotations_path
         self.output_annotations_path = output_annotations_path
         self.input_items_path = input_items_path
-        self.input_annotations_path = input_annotations_path
         self.upload_items = upload_items
-        self.concurrency = concurrency
         self.add_labels_to_recipe = add_labels_to_recipe
+        self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
