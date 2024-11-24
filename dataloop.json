@@ -19,7 +19,8 @@
       "Bounding Box",
       "Polygon",
       "Semantic Segmentation"
-    ]
+    ],
+    "License": "Apache 2.0"
   },
   "version": "3.0.6",
   "scope": "public",
@@ -34,8 +35,7 @@
         "name": "dtlpy-converters",
         "entryPoint": "dtlpyconverters/services/converters_service.py",
         "className": "DataloopConverters",
-        "initInputs": [
-        ],
+        "initInputs": [],
         "functions": [
           {
             "name": "dataloop_to_coco",
