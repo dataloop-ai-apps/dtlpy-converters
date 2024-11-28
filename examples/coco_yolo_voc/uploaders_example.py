@@ -18,7 +18,7 @@ loop.run_until_complete(converter.coco_to_dataloop(dataset=coco_dataset,
 # Upload YOLO local
 yolo_dataset = dl.datasets.get(dataset_id='')
 loop.run_until_complete(converter.yolo_to_dataloop(dataset=yolo_dataset,
-                                                   input_items_path=r'../yolo/images',
+                                                   input_items_path=r'../yolo/input',
                                                    input_annotations_path=r'../yolo/yolo/annotations',
                                                    upload_items=True,
                                                    add_labels_to_recipe=True,
