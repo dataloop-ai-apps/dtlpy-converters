@@ -56,8 +56,7 @@
                 "name": "item"
               }
             ],
-            "displayName": "COCO Converter",
-            "action": "download"
+            "displayName": "COCO Converter"
           },
           {
             "name": "dataloop_to_voc",
@@ -78,8 +77,7 @@
                 "name": "item"
               }
             ],
-            "displayName": "VOC Converter",
-            "action": "download"
+            "displayName": "VOC Converter"
           },
           {
             "name": "dataloop_to_yolo",
@@ -100,8 +98,7 @@
                 "name": "item"
               }
             ],
-            "displayName": "YOLO Converter",
-            "action": "download"
+            "displayName": "YOLO Converter"
           }
         ]
       }
@@ -112,7 +109,7 @@
         "moduleName": "dtlpy-converters",
         "runtime": {
           "podType": "highmem-m",
-          "runnerImage": "dataloopai/dtlpy-agent:cpu.py3.8.opencv4.7",
+          "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.0.7",
           "numReplicas": 1,
           "concurrency": 1,
           "pyPackages": {},
@@ -140,7 +137,8 @@
           "namespace": "dtlpy-converters.dataloop_to_coco"
         },
         "location": "datasetBrowserApps",
-        "icon": "icon-dl-edit"
+        "icon": "icon-dl-edit",
+        "action": "download"
       },
       {
         "displayName": "YOLO Converter 2.0",
@@ -149,7 +147,8 @@
           "namespace": "dtlpy-converters.dataloop_to_yolo"
         },
         "location": "datasetBrowserApps",
-        "icon": "icon-dl-edit"
+        "icon": "icon-dl-edit",
+        "action": "download"
       },
       {
         "displayName": "VOC Converter 2.0",
@@ -158,7 +157,8 @@
           "namespace": "dtlpy-converters.dataloop_to_voc"
         },
         "location": "datasetBrowserApps",
-        "icon": "icon-dl-edit"
+        "icon": "icon-dl-edit",
+        "action": "download"
       }
     ]
   }
