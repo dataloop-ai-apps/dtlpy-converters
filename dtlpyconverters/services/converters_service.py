@@ -57,7 +57,7 @@ class DataloopConverters(dl.BaseServiceRunner):
             item = conv.dataset.items.upload(local_path=zip_path,
                                              remote_path='/.dataloop/{}'.format(conv_type))
 
-            return item.id
+            return item
         except Exception as e:
             raise e
         finally:
