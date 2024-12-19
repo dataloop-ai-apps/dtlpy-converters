@@ -110,7 +110,7 @@
                 "moduleName": "dtlpy-converters",
                 "runtime": {
                     "podType": "highmem-m",
-                    "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.0.7",
+                    "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.0.9",
                     "numReplicas": 1,
                     "concurrency": 1,
                     "pyPackages": {},
