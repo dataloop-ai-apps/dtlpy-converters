@@ -330,7 +330,7 @@ class DataloopToYolo(BaseExportConverter):
         if isinstance(self.label_to_id_map, dict) and len(self.label_to_id_map) == 0:
             raise RuntimeError('No labels found in the dataset!')
         os.makedirs(self.output_annotations_path, exist_ok=True)
-        sorted_labels = [k for k, v in sorted(self.label_to_id_map.items(), key=lambda item: item[1])]
+        sorted_labels = [k for k, v in self.label_to_id_map.items()]
         with open(os.path.join(self.output_annotations_path, 'labels.txt'), 'w') as f:
             f.write('\n'.join(sorted_labels))
 
