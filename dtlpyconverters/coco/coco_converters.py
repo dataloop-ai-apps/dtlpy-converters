@@ -66,7 +66,8 @@ class DataloopToCoco(BaseExportConverter):
                  download_annotations=True,
                  download_items=False,
                  concurrency=6,
-                 return_error_filepath=False):
+                 return_error_filepath=False,
+                 label_to_id_mapping=None):
         """
         Convert Dataloop Dataset annotation to COCO format.
 
@@ -90,6 +91,7 @@ class DataloopToCoco(BaseExportConverter):
             download_items=download_items,
             concurrency=concurrency,
             return_error_filepath=return_error_filepath,
+            label_to_id_mapping=label_to_id_mapping,
         )
         # COCO related
         self.images = dict()
@@ -158,7 +160,7 @@ class DataloopToCoco(BaseExportConverter):
             self.dataset.items.download(local_path=self.output_items_path)
 
         files = list(json_path.rglob('*.json'))
-        self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.dataset.instance_map,
+        self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.label_to_id_mapping,
                                                                                 self.dataset.recipes.list()[0])}
         self.pbar = tqdm.tqdm(total=len(files))
         futures = list()
