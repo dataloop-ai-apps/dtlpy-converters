@@ -1,4 +1,4 @@
-import os.path
+import os
 import dtlpy as dl
 import asyncio
 from dtlpyconverters import coco_converters, yolo_converters, voc_converters
@@ -21,7 +21,7 @@ class ConvertersUploader(dl.BaseServiceRunner):
                 raise e
         return loop
 
-    async def coco_to_dataloop(self, dataset: dl.Dataset, input_annotations_path, input_items_path, coco_json_filename,
+    def coco_to_dataloop(self, dataset: dl.Dataset, input_annotations_path, input_items_path, coco_json_filename,
                                annotation_options=None, upload_items=True, to_polygon=True):
         """
         :param dataset: dataloop dataset
@@ -46,8 +46,8 @@ class ConvertersUploader(dl.BaseServiceRunner):
                                                      annotation_options=annotation_options,
                                                      to_polygon=to_polygon))
 
-    async def yolo_to_dataloop(self, dataset: dl.Dataset, input_annotations_path, input_items_path, upload_items=True,
-                               add_labels_to_recipe=True, labels_txt_filepath=None):
+    def yolo_to_dataloop(self, dataset: dl.Dataset, input_annotations_path, input_items_path, upload_items=True,
+                         add_labels_to_recipe=True, labels_txt_filepath=None):
         """
         :param dataset: dataloop dataset
         :param input_annotations_path: path to annotations folder
@@ -67,8 +67,8 @@ class ConvertersUploader(dl.BaseServiceRunner):
             raise Exception(f'file {labels_txt_filepath} file not found')
         loop.run_until_complete(conv.convert_dataset(labels_txt_filepath=labels_txt_filepath))
 
-    async def voc_to_dataloop(self, dataset: dl.Dataset, input_annotations_path, input_items_path, upload_items=True,
-                              add_labels_to_recipe=True):
+    def voc_to_dataloop(self, dataset: dl.Dataset, input_annotations_path, input_items_path, upload_items=True,
+                        add_labels_to_recipe=True):
         """
         :param dataset: dataloop dataset
         :param input_annotations_path: path to annotations folder
