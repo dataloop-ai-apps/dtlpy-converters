@@ -200,7 +200,7 @@ class DataloopToCoco(BaseExportConverter):
         annotations = kwargs.get('annotations')
         logger.debug(f'Started: {item.id}')
 
-        self.images[item.id] = {'file_name': item.name,
+        self.images[item.id] = {'file_name': item.filename[1:],
                                 'id': item.id,
                                 'width': item.width,
                                 'height': item.height
