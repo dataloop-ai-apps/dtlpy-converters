@@ -379,8 +379,8 @@ class DataloopToCoco(BaseExportConverter):
             category = annotation.label.split('.')[-1]
             try:
                 ann['category_id'] = self.categories[category]['id']
-            except KeyError:
-                raise KeyError(f"Category {category} not found in dataset for label {annotation.label}")
+            except KeyError as e:
+                raise KeyError(f"Category {category} not found in dataset for label {annotation.label}") from e
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
             self.annotations[annotation.id] = ann
@@ -388,6 +388,7 @@ class DataloopToCoco(BaseExportConverter):
 
         except Exception:
             print(traceback.format_exc())
+            return kwargs
 
     async def on_segmentation(self, **kwargs):
         """
