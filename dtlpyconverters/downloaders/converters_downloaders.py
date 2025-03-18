@@ -21,52 +21,64 @@ class ConvertersDownloader(dl.BaseServiceRunner):
         return loop
 
     def dataloop_to_coco(self, dataset: dl.Dataset, output_annotations_path, input_annotations_path=None,
-                         download_annotations=True, filters=None):
+                         download_annotations=True, output_items_path=None, download_items=False, filters=None):
         """
         :param dataset: dataloop dataset
         :param input_annotations_path: path to annotations folder
-        :param output_annotations_path:
-        :param download_annotations:
-        :param filters:
+        :param output_annotations_path: path to output annotations folder
+        :param download_annotations: download annotations from Dataloop or use local
+        :param output_items_path: where to save the downloaded items
+        :param download_items: download the images with the converted annotations
+        :param filters: dl.Filters object to filter the items from dataset
         """
-        conv = coco_converters.DataloopToCoco(input_annotations_path=input_annotations_path,
+        conv = coco_converters.DataloopToCoco(dataset=dataset,
+                                              input_annotations_path=input_annotations_path,
                                               output_annotations_path=output_annotations_path,
                                               download_annotations=download_annotations,
-                                              filters=filters,
-                                              dataset=dataset)
+                                              output_items_path=output_items_path,
+                                              download_items=download_items,
+                                              filters=filters)
         loop = self._get_event_loop()
         loop.run_until_complete(conv.convert_dataset())
 
     def dataloop_to_yolo(self, dataset: dl.Dataset, output_annotations_path, input_annotations_path=None,
-                         download_annotations=True, filters=None):
+                         download_annotations=True, output_items_path=None, download_items=False, filters=None):
         """
         :param dataset: dataloop dataset
         :param input_annotations_path: path to annotations folder
-        :param output_annotations_path:
-        :param download_annotations:
-        :param filters:
+        :param output_annotations_path: path to output annotations folder
+        :param download_annotations: download annotations from Dataloop or use local
+        :param output_items_path: where to save the downloaded items
+        :param download_items: download the images with the converted annotations
+        :param filters: dl.Filters object to filter the items from dataset
         """
-        conv = yolo_converters.DataloopToYolo(input_annotations_path=input_annotations_path,
+        conv = yolo_converters.DataloopToYolo(dataset=dataset,
+                                              input_annotations_path=input_annotations_path,
                                               output_annotations_path=output_annotations_path,
                                               download_annotations=download_annotations,
-                                              filters=filters,
-                                              dataset=dataset)
+                                              output_items_path=output_items_path,
+                                              download_items=download_items,
+                                              filters=filters)
         loop = self._get_event_loop()
         loop.run_until_complete(conv.convert_dataset())
 
     def dataloop_to_voc(self, dataset: dl.Dataset, output_annotations_path, input_annotations_path=None,
-                        download_annotations=True, filters=None):
+                        download_annotations=True, output_items_path=None, download_items=False, filters=None):
         """
         :param dataset: dataloop dataset
         :param input_annotations_path: path to annotations folder
-        :param output_annotations_path:
-        :param download_annotations:
-        :param filters:
+        :param output_annotations_path: path to output annotations folder
+        :param download_annotations: download annotations from Dataloop or use local
+        :param output_items_path: where to save the downloaded items
+        :param download_items: download the images with the converted annotations
+        :param filters: dl.Filters object to filter the items from dataset
         """
-        voc_converter = voc_converters.DataloopToVoc(input_annotations_path=input_annotations_path,
+        voc_converter = voc_converters.DataloopToVoc(dataset=dataset,
+                                                     input_annotations_path=input_annotations_path,
                                                      output_annotations_path=output_annotations_path,
                                                      download_annotations=download_annotations,
-                                                     filters=filters,
-                                                     dataset=dataset)
+                                                     output_items_path=output_items_path,
+                                                     download_items=download_items,
+                                                     filters=filters)
         loop = self._get_event_loop()
         loop.run_until_complete(voc_converter.convert_dataset())

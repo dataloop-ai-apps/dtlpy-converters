@@ -22,7 +22,7 @@ class ConvertersUploader(dl.BaseServiceRunner):
         return loop
 
     def coco_to_dataloop(self, dataset: dl.Dataset, input_annotations_path, input_items_path, coco_json_filename,
-                               annotation_options=None, upload_items=True, to_polygon=True):
+                         annotation_options=None, upload_items=True, to_polygon=True):
         """
         :param dataset: dataloop dataset
         :param input_annotations_path: path to annotations folder
