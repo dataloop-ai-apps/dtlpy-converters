@@ -12,21 +12,25 @@ class BaseExportConverter:
     Annotation Converter
     """
 
-    def __init__(self,
-                 dataset: dl.Dataset,
-                 output_annotations_path,
-                 output_items_path=None,
-                 input_annotations_path=None,
-                 filters: dl.Filters = None,
-                 download_annotations=True,
-                 download_items=False,
-                 concurrency=6,
-                 return_error_filepath=False):
+    def __init__(
+        self,
+        dataset: dl.Dataset,
+        output_annotations_path,
+        output_items_path=None,
+        input_annotations_path=None,
+        filters: dl.Filters = None,
+        download_annotations=True,
+        download_items=False,
+        concurrency=6,
+        return_error_filepath=False,
+        label_to_id_mapping: dict = None,
+    ):
         if output_items_path is None:
             output_items_path = output_annotations_path
         if input_annotations_path is None:
             input_annotations_path = output_annotations_path
-
+        if label_to_id_mapping is None:
+            label_to_id_mapping = dataset.instance_map
         self.dataset = dataset
         self.output_annotations_path = output_annotations_path
         self.output_items_path = output_items_path
@@ -36,17 +40,14 @@ class BaseExportConverter:
         self.download_items = download_items
         self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
+        self.label_to_id_mapping = label_to_id_mapping
 
     async def convert_dataset(self, **kwargs):
         """
         :param kwargs:
         :return:
         """
-        return await self.on_dataset_end(
-            **await self.on_dataset(
-                **await self.on_dataset_start(**kwargs)
-            )
-        )
+        return await self.on_dataset_end(**await self.on_dataset(**await self.on_dataset_start(**kwargs)))
 
     async def on_dataset_start(self, **kwargs):
         return kwargs
@@ -67,16 +68,12 @@ class BaseExportConverter:
             with open(annotation_json_filepath, 'r') as f:
                 data = json.load(f)
                 json_annotations = data.pop('annotations')
-                item = dl.Item.from_json(_json=data,
-                                         client_api=dl.client_api,
-                                         dataset=self.dataset)
+                item = dl.Item.from_json(_json=data, client_api=dl.client_api, dataset=self.dataset)
                 annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
 
                 context = await self.on_item_end(
                     **await self.on_item(
-                        **await self.on_item_start(item=item,
-                                                   dataset=self.dataset,
-                                                   annotations=annotations)
+                        **await self.on_item_start(item=item, dataset=self.dataset, annotations=annotations)
                     )
                 )
         logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
@@ -94,10 +91,7 @@ class BaseExportConverter:
         annotations = kwargs.get('annotations')
         outputs = dict()
         for i_annotation, annotation in enumerate(annotations.annotations):
-            outs = {"dataset": dataset,
-                    "item": item,
-                    "annotation": annotation,
-                    "annotations": annotations}
+            outs = {"dataset": dataset, "item": item, "annotation": annotation, "annotations": annotations}
             outs = await self.on_annotation_start(**outs)
             if annotation.type == dl.AnnotationType.BOX:
                 outs = await self.on_box(**outs)
@@ -148,15 +142,17 @@ class BaseImportConverter:
     Annotation Converter
     """
 
-    def __init__(self,
-                 dataset: dl.Dataset,
-                 input_annotations_path,
-                 output_annotations_path=None,
-                 input_items_path=None,
-                 upload_items=False,
-                 add_labels_to_recipe=True,
-                 concurrency=6,
-                 return_error_filepath=False):
+    def __init__(
+        self,
+        dataset: dl.Dataset,
+        input_annotations_path,
+        output_annotations_path=None,
+        input_items_path=None,
+        upload_items=False,
+        add_labels_to_recipe=True,
+        concurrency=6,
+        return_error_filepath=False,
+    ):
         if output_annotations_path is None:
             output_annotations_path = input_annotations_path
         if input_items_path is None:

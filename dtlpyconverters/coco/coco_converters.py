@@ -66,7 +66,8 @@ class DataloopToCoco(BaseExportConverter):
                  download_annotations=True,
                  download_items=False,
                  concurrency=6,
-                 return_error_filepath=False):
+                 return_error_filepath=False,
+                 label_to_id_mapping=None):
         """
         Convert Dataloop Dataset annotation to COCO format.
 
@@ -90,6 +91,7 @@ class DataloopToCoco(BaseExportConverter):
             download_items=download_items,
             concurrency=concurrency,
             return_error_filepath=return_error_filepath,
+            label_to_id_mapping=label_to_id_mapping,
         )
         # COCO related
         self.images = dict()
@@ -158,7 +160,7 @@ class DataloopToCoco(BaseExportConverter):
             self.dataset.items.download(local_path=self.output_items_path)
 
         files = list(json_path.rglob('*.json'))
-        self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.dataset.instance_map,
+        self.categories = {cat['name']: cat for cat in self.gen_coco_categories(self.label_to_id_mapping,
                                                                                 self.dataset.recipes.list()[0])}
         self.pbar = tqdm.tqdm(total=len(files))
         futures = list()
@@ -198,7 +200,7 @@ class DataloopToCoco(BaseExportConverter):
         annotations = kwargs.get('annotations')
         logger.debug(f'Started: {item.id}')
 
-        self.images[item.id] = {'file_name': item.name,
+        self.images[item.id] = {'file_name': item.filename[1:],
                                 'id': item.id,
                                 'width': item.width,
                                 'height': item.height
@@ -377,8 +379,8 @@ class DataloopToCoco(BaseExportConverter):
             category = annotation.label.split('.')[-1]
             try:
                 ann['category_id'] = self.categories[category]['id']
-            except KeyError:
-                raise KeyError(f"Category {category} not found in dataset for label {annotation.label}")
+            except KeyError as e:
+                raise KeyError(f"Category {category} not found in dataset for label {annotation.label}") from e
             ann['image_id'] = self.images[item.id]['id']
             ann['id'] = annotation.id
             self.annotations[annotation.id] = ann
@@ -386,6 +388,7 @@ class DataloopToCoco(BaseExportConverter):
 
         except Exception:
             print(traceback.format_exc())
+            return kwargs
 
     async def on_segmentation(self, **kwargs):
         """
