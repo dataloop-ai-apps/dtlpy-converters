@@ -21,7 +21,8 @@ class ConvertersDownloader(dl.BaseServiceRunner):
         return loop
 
     def dataloop_to_coco(self, dataset: dl.Dataset, output_annotations_path, input_annotations_path=None,
-                         download_annotations=True, output_items_path=None, download_items=False, filters=None):
+                         download_annotations=True, output_items_path=None, download_items=False, filters=None,
+                         label_to_id_mapping=None):
         """
         :param dataset: dataloop dataset
         :param input_annotations_path: path to annotations folder
@@ -30,6 +31,7 @@ class ConvertersDownloader(dl.BaseServiceRunner):
         :param output_items_path: where to save the downloaded items
         :param download_items: download the images with the converted annotations
         :param filters: dl.Filters object to filter the items from dataset
+        :param label_to_id_mapping: dictionary to map labels to ids
         """
         conv = coco_converters.DataloopToCoco(dataset=dataset,
                                               input_annotations_path=input_annotations_path,
@@ -37,7 +39,8 @@ class ConvertersDownloader(dl.BaseServiceRunner):
                                               download_annotations=download_annotations,
                                               output_items_path=output_items_path,
                                               download_items=download_items,
-                                              filters=filters)
+                                              filters=filters,
+                                              label_to_id_mapping=label_to_id_mapping)
         loop = self._get_event_loop()
         loop.run_until_complete(conv.convert_dataset())
 

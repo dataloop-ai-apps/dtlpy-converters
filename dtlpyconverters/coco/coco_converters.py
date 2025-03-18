@@ -78,6 +78,7 @@ class DataloopToCoco(BaseExportConverter):
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
         :param download_annotations: download annotations from Dataloop or use local
+        :param label_to_id_mapping: dictionary to map labels to ids
         :return:
         """
         # global vars

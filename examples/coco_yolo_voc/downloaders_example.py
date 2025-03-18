@@ -15,7 +15,8 @@ converter.dataloop_to_coco(
     download_annotations=True,
     output_items_path=None,
     download_items=False,
-    filters=filters
+    filters=filters,
+    label_to_id_mapping=None
 )
 
 # Convert dataset to YOLO
@@ -27,7 +28,7 @@ converter.dataloop_to_yolo(
     download_annotations=True,
     output_items_path=None,
     download_items=False,
-    filters=filters,
+    filters=filters
 )
 
 # Convert dataset to VOC
