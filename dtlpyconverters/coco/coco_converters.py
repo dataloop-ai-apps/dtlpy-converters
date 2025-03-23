@@ -135,6 +135,16 @@ class DataloopToCoco(BaseExportConverter):
 
         return categories
 
+    def convert(self, **kwargs):
+        """
+        Sync convert Dataloop Dataset annotation to COCO format.
+        :param use_rle: convert both segmentation and polygons to RLE encoding.
+            if None - default for segmentation is RLE default for polygon is coordinates list
+        :return:
+        """
+        self.use_rle = kwargs.get('use_rle', True)
+        return super().convert(**kwargs)
+
     async def convert_dataset(self, **kwargs):
         """
         Convert Dataloop Dataset annotation to COCO format.
@@ -560,6 +570,20 @@ class CocoToDataloop(BaseImportConverter):
             hierarchy.append(name)
             labels[category_id] = ".".join(hierarchy)
         return labels
+
+    def convert(self,
+                annotation_options=None,
+                coco_json_filename='coco.json',
+                to_polygon=False):
+        """
+        Converting a dataset from Yolo format to Dataloop.
+        """
+        kwargs = dict(
+            annotation_options=annotation_options,
+            coco_json_filename=coco_json_filename,
+            to_polygon=to_polygon
+        )
+        return super().convert(**kwargs)
 
     async def convert_dataset(self,
                               annotation_options=None,

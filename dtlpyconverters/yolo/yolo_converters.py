@@ -7,6 +7,7 @@ import time
 import json
 import os
 import cv2
+from pandas.core.window.doc import kwargs_scipy
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -36,6 +37,13 @@ class YoloToDataloop(BaseImportConverter):
             concurrency=concurrency,
             return_error_filepath=return_error_filepath,
         )
+
+    def convert(self, labels_txt_filepath):
+        """
+        Sync converting a dataset from Yolo format to Dataloop.
+        """
+        kwargs = dict(labels_txt_filepat=labels_txt_filepath)
+        return super().convert(**kwargs)
 
     async def convert_dataset(self, labels_txt_filepath):
         """

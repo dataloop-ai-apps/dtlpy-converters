@@ -3,8 +3,22 @@ import dtlpy as dl
 import logging
 import time
 import json
+import asyncio
+import nest_asyncio
 
 logger = logging.getLogger(name='dtlpy-converters')
+
+
+def _get_event_loop():
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError as e:
+        if "no current event loop" in str(e):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop=loop)
+        else:
+            raise e
+    return loop
 
 
 class BaseExportConverter:
@@ -25,6 +39,7 @@ class BaseExportConverter:
         return_error_filepath=False,
         label_to_id_mapping: dict = None,
     ):
+        nest_asyncio.apply()
         if output_items_path is None:
             output_items_path = output_annotations_path
         if input_annotations_path is None:
@@ -41,6 +56,10 @@ class BaseExportConverter:
         self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
         self.label_to_id_mapping = label_to_id_mapping
+
+    def convert(self, **kwargs):
+        loop = _get_event_loop()
+        return loop.run_until_complete(future=self.convert_dataset(**kwargs))
 
     async def convert_dataset(self, **kwargs):
         """
@@ -153,6 +172,7 @@ class BaseImportConverter:
         concurrency=6,
         return_error_filepath=False,
     ):
+        nest_asyncio.apply()
         if output_annotations_path is None:
             output_annotations_path = input_annotations_path
         if input_items_path is None:
@@ -166,3 +186,10 @@ class BaseImportConverter:
         self.add_labels_to_recipe = add_labels_to_recipe
         self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
+
+    def convert(self, **kwargs):
+        loop = _get_event_loop()
+        return loop.run_until_complete(future=self.convert_dataset(**kwargs))
+
+    async def convert_dataset(self, **kwargs):
+        raise NotImplementedError
