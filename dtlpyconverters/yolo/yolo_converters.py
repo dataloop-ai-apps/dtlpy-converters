@@ -38,16 +38,22 @@ class YoloToDataloop(BaseImportConverter):
             return_error_filepath=return_error_filepath,
         )
 
-    def convert(self, labels_txt_filepath):
+    def convert(self, labels_txt_filepath, **kwargs):
         """
-        Sync converting a dataset from Yolo format to Dataloop.
+        Sync call to 'convert_dataset'.
+        :param labels_txt_filepath: path to yolo labels txt file.
+        :return:
         """
-        kwargs = dict(labels_txt_filepat=labels_txt_filepath)
+        kwargs.update(dict(
+            labels_txt_filepat=labels_txt_filepath
+        ))
         return super().convert(**kwargs)
 
     async def convert_dataset(self, labels_txt_filepath):
         """
         Converting a dataset from Yolo format to Dataloop.
+        :param labels_txt_filepath: path to yolo labels txt file.
+        :return:
         """
         # inputs
         self.label_txt_filepath = labels_txt_filepath

@@ -7,6 +7,7 @@ import logging
 import tqdm
 import json
 import os
+from typing import List
 
 from ..base import BaseExportConverter, BaseImportConverter
 
@@ -135,24 +136,26 @@ class DataloopToCoco(BaseExportConverter):
 
         return categories
 
-    def convert(self, **kwargs):
+    def convert(self, use_rle=True, **kwargs):
         """
-        Sync convert Dataloop Dataset annotation to COCO format.
+        Sync call to 'convert_dataset'.
         :param use_rle: convert both segmentation and polygons to RLE encoding.
             if None - default for segmentation is RLE default for polygon is coordinates list
         :return:
         """
-        self.use_rle = kwargs.get('use_rle', True)
+        kwargs.update(dict(
+            use_rle=use_rle
+        ))
         return super().convert(**kwargs)
 
-    async def convert_dataset(self, **kwargs):
+    async def convert_dataset(self, use_rle=True, **kwargs):
         """
         Convert Dataloop Dataset annotation to COCO format.
         :param use_rle: convert both segmentation and polygons to RLE encoding.
             if None - default for segmentation is RLE default for polygon is coordinates list
         :return:
         """
-        self.use_rle = kwargs.get('use_rle', True)
+        self.use_rle = use_rle
         kwargs = await self.on_dataset(**kwargs)
 
     async def on_dataset(self, **kwargs):
@@ -572,23 +575,35 @@ class CocoToDataloop(BaseImportConverter):
         return labels
 
     def convert(self,
-                annotation_options=None,
+                annotation_options: List[dl.AnnotationType] = None,
                 coco_json_filename='coco.json',
-                to_polygon=False):
+                to_polygon=False,
+                **kwargs):
         """
-        Converting a dataset from Yolo format to Dataloop.
+        Converting a dataset from Coco format to Dataloop.
+        :param annotation_options: dataloop annotation type options to export from: SEGMENTATION, POSE and BOX (by default: BOX)
+        :param coco_json_filename: coco json filename
+        :param to_polygon:
+        :return:
         """
-        kwargs = dict(
+        kwargs.update(dict(
             annotation_options=annotation_options,
             coco_json_filename=coco_json_filename,
             to_polygon=to_polygon
-        )
+        ))
         return super().convert(**kwargs)
 
     async def convert_dataset(self,
-                              annotation_options=None,
+                              annotation_options: List[dl.AnnotationType] = None,
                               coco_json_filename='coco.json',
                               to_polygon=False):
+        """
+        Converting a dataset from Coco format to Dataloop.
+        :param annotation_options: dataloop annotation type options to export from: SEGMENTATION, POSE and BOX (by default: BOX)
+        :param coco_json_filename: coco json filename
+        :param to_polygon:
+        :return:
+        """
         self.annotation_options = annotation_options if annotation_options is not None else [dl.AnnotationType.BOX]
         self.to_polygon = to_polygon
         self.coco_dataset = pycocotools.coco.COCO(

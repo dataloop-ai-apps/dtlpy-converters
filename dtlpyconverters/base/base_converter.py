@@ -58,6 +58,10 @@ class BaseExportConverter:
         self.label_to_id_mapping = label_to_id_mapping
 
     def convert(self, **kwargs):
+        """
+        Sync call to 'convert_dataset'.
+        :return:
+        """
         loop = _get_event_loop()
         return loop.run_until_complete(future=self.convert_dataset(**kwargs))
 
@@ -188,6 +192,9 @@ class BaseImportConverter:
         self.return_error_filepath = return_error_filepath
 
     def convert(self, **kwargs):
+        """
+        Sync call to 'convert_dataset'.
+        """
         loop = _get_event_loop()
         return loop.run_until_complete(future=self.convert_dataset(**kwargs))
 
