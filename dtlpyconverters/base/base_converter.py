@@ -8,9 +8,10 @@ import nest_asyncio
 
 logger = logging.getLogger(name='dtlpy-converters')
 
+nest_asyncio.apply()
 
-def _get_event_loop():
-    nest_asyncio.apply()
+
+def get_event_loop():
     try:
         loop = asyncio.get_event_loop()
     except RuntimeError as e:
@@ -62,15 +63,15 @@ class BaseExportConverter:
         Sync call to 'convert_dataset'.
         :return:
         """
-        loop = _get_event_loop()
-        return loop.run_until_complete(future=self.convert_dataset(**kwargs))
+        loop = get_event_loop()
+        loop.run_until_complete(future=self.convert_dataset(**kwargs))
 
     async def convert_dataset(self, **kwargs):
         """
         :param kwargs:
         :return:
         """
-        return await self.on_dataset_end(**await self.on_dataset(**await self.on_dataset_start(**kwargs)))
+        await self.on_dataset_end(**await self.on_dataset(**await self.on_dataset_start(**kwargs)))
 
     async def on_dataset_start(self, **kwargs):
         return kwargs
@@ -194,8 +195,8 @@ class BaseImportConverter:
         """
         Sync call to 'convert_dataset'.
         """
-        loop = _get_event_loop()
-        return loop.run_until_complete(future=self.convert_dataset(**kwargs))
+        loop = get_event_loop()
+        loop.run_until_complete(future=self.convert_dataset(**kwargs))
 
     async def convert_dataset(self, **kwargs):
         raise NotImplementedError

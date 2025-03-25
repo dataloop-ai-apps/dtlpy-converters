@@ -7,7 +7,7 @@ import json
 import os
 import cv2
 
-from ..base import BaseExportConverter, BaseImportConverter, logger
+from ..base import BaseExportConverter, BaseImportConverter, logger, get_event_loop
 
 
 class YoloToDataloop(BaseImportConverter):
@@ -34,16 +34,16 @@ class YoloToDataloop(BaseImportConverter):
             return_error_filepath=return_error_filepath,
         )
 
-    def convert(self, labels_txt_filepath, **kwargs):
+    def convert(self, labels_txt_filepath):
         """
         Sync call to 'convert_dataset'.
         :param labels_txt_filepath: path to yolo labels txt file.
         :return:
         """
-        kwargs.update(dict(
+        loop = get_event_loop()
+        loop.run_until_complete(future=self.convert_dataset(
             labels_txt_filepath=labels_txt_filepath
         ))
-        return super().convert(**kwargs)
 
     async def convert_dataset(self, labels_txt_filepath):
         """
