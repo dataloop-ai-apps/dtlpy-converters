@@ -45,7 +45,7 @@ class YoloToDataloop(BaseImportConverter):
         :return:
         """
         kwargs.update(dict(
-            labels_txt_filepat=labels_txt_filepath
+            labels_txt_filepath=labels_txt_filepath
         ))
         return super().convert(**kwargs)
 
