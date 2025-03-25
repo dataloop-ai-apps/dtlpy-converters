@@ -62,7 +62,7 @@ class YoloToDataloop(BaseImportConverter):
         # read annotations files and run on items
         files = list(Path(self.input_annotations_path).rglob('*.txt'))
         for txt_file in files:
-            _ = await self.on_item(annotation_filepath=str(txt_file))
+            await self.on_item(annotation_filepath=str(txt_file))
 
     @staticmethod
     def _get_video_data(input_filename):

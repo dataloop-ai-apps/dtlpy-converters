@@ -81,7 +81,7 @@ class DataloopToVoc(BaseExportConverter):
                                          client_api=dl.client_api,
                                          dataset=self.dataset)
                 annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
-                _ = await self.on_item_end(
+                await self.on_item_end(
                     **await self.on_item(
                         **await self.on_item_start(item=item,
                                                    dataset=self.dataset,
