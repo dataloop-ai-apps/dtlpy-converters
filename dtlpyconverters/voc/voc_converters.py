@@ -56,9 +56,10 @@ class DataloopToVoc(BaseExportConverter):
 
     async def on_dataset(self, **kwargs):
         """
-        Callback to tun the conversion on a dataset.
+        Callback to run the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
         """
+        kwargs = self.on_dataset_start(**kwargs)
         self.to_path_anns = os.path.join(self.output_annotations_path, 'annotations')
         self.to_path_masks = os.path.join(self.output_annotations_path, 'segmentation_class')
 
@@ -81,7 +82,7 @@ class DataloopToVoc(BaseExportConverter):
                                          client_api=dl.client_api,
                                          dataset=self.dataset)
                 annotations = dl.AnnotationCollection.from_json(_json=json_annotations, item=item)
-                await self.on_item_end(
+                _ = await self.on_item_end(
                     **await self.on_item(
                         **await self.on_item_start(item=item,
                                                    dataset=self.dataset,
@@ -89,12 +90,7 @@ class DataloopToVoc(BaseExportConverter):
                     )
                 )
 
-        return kwargs
-
-    async def on_dataset_end(self, **kwargs):
-        """
-        """
-        ...
+        return await self.on_dataset_end(**kwargs)
 
     async def on_item(self, **kwargs):
         """
@@ -208,6 +204,10 @@ class VocToDataloop(BaseImportConverter):
         )
 
     async def convert_dataset(self, **kwargs):
+        """
+        Converting a dataset from VOC format to Dataloop.
+        :return:
+        """
         xml_files = list(Path(self.input_annotations_path).rglob('*.xml'))
         self.pbar = tqdm.tqdm(total=len(xml_files))
         for annotation_xml_filepath in xml_files:

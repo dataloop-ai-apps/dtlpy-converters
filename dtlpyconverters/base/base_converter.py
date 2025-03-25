@@ -64,14 +64,14 @@ class BaseExportConverter:
         :return:
         """
         loop = get_event_loop()
-        loop.run_until_complete(future=self.convert_dataset(**kwargs))
+        return loop.run_until_complete(future=self.convert_dataset(**kwargs))
 
     async def convert_dataset(self, **kwargs):
         """
         :param kwargs:
         :return:
         """
-        await self.on_dataset_end(**await self.on_dataset(**await self.on_dataset_start(**kwargs)))
+        return await self.on_dataset_end(**await self.on_dataset(**await self.on_dataset_start(**kwargs)))
 
     async def on_dataset_start(self, **kwargs):
         return kwargs

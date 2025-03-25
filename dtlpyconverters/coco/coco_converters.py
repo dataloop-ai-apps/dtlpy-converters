@@ -133,7 +133,7 @@ class DataloopToCoco(BaseExportConverter):
 
         return categories
 
-    def convert(self, use_rle=True):
+    def convert(self, use_rle=True, **kwargs):
         """
         Sync call to 'convert_dataset'.
         :param use_rle: convert both segmentation and polygons to RLE encoding.
@@ -142,10 +142,11 @@ class DataloopToCoco(BaseExportConverter):
         """
         loop = get_event_loop()
         loop.run_until_complete(future=self.convert_dataset(
-            use_rle=use_rle
+            use_rle=use_rle,
+            **kwargs
         ))
 
-    async def convert_dataset(self, use_rle=True):
+    async def convert_dataset(self, use_rle=True, **kwargs):
         """
         Convert Dataloop Dataset annotation to COCO format.
         :param use_rle: convert both segmentation and polygons to RLE encoding.
@@ -153,13 +154,14 @@ class DataloopToCoco(BaseExportConverter):
         :return:
         """
         self.use_rle = use_rle
-        await self.on_dataset()
+        return await self.on_dataset(**kwargs)
 
-    async def on_dataset(self):
+    async def on_dataset(self, **kwargs):
         """
         Callback to run the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
         """
+        kwargs = self.on_dataset_start(**kwargs)
         if self.download_annotations:
             self.dataset.download_annotations(local_path=self.input_annotations_path,
                                               filters=self.filters)
@@ -186,9 +188,9 @@ class DataloopToCoco(BaseExportConverter):
                                                             dataset=self.dataset,
                                                             annotations=annotations)))
         await asyncio.gather(*futures)
-        await self.on_dataset_end()
+        return await self.on_dataset_end(**kwargs)
 
-    async def on_dataset_end(self):
+    async def on_dataset_end(self, **kwargs):
         final_json = {'annotations': list(self.annotations.values()),
                       'categories': list(self.categories.values()),
                       'images': list(self.images.values())}
@@ -196,6 +198,7 @@ class DataloopToCoco(BaseExportConverter):
         os.makedirs(self.output_annotations_path, exist_ok=True)
         with open(os.path.join(self.output_annotations_path, "coco.json"), 'w') as f:
             json.dump(final_json, f, indent=2)
+        return kwargs
 
     async def on_item(self, **kwargs):
         """
