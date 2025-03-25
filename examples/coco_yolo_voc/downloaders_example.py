@@ -7,7 +7,7 @@ from dtlpyconverters.voc import DataloopToVoc
 filters = dl.Filters()
 
 # Convert dataset to COCO
-coco_dataset = dl.datasets.get(dataset_id='')
+coco_dataset = dl.datasets.get(dataset_id='67e27173f51ca8ccc82fc85f')
 converter = DataloopToCoco(
     dataset=coco_dataset,
     input_annotations_path=r'./input_coco',
@@ -21,7 +21,7 @@ converter = DataloopToCoco(
 converter.convert()
 
 # Convert dataset to YOLO
-yolo_dataset = dl.datasets.get(dataset_id='')
+yolo_dataset = dl.datasets.get(dataset_id='67e2718af51ca83a0b2fc898')
 converter = DataloopToYolo(
     dataset=yolo_dataset,
     input_annotations_path=r'./input_yolo',
@@ -34,7 +34,7 @@ converter = DataloopToYolo(
 converter.convert()
 
 # Convert dataset to VOC
-voc_dataset = dl.datasets.get(dataset_id='')
+voc_dataset = dl.datasets.get(dataset_id='67e2719ef51ca88aea2fc8e5')
 converter = DataloopToVoc(
     dataset=voc_dataset,
     input_annotations_path=r'./input_voc',
