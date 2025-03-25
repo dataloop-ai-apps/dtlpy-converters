@@ -51,7 +51,7 @@ class DataloopToYolo(BaseExportConverter):
         Callback to run the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
         """
-        context = self.on_dataset_start(**context)
+        context = await self.on_dataset_start(**context)
         if self.download_annotations:
             self.dataset.download_annotations(local_path=self.input_annotations_path,
                                               filters=self.filters)
@@ -89,7 +89,8 @@ class DataloopToYolo(BaseExportConverter):
                 )
             )
         logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
-        return await self.on_dataset_end(**context)
+        context = await self.on_dataset_end(**context)
+        return context
 
     async def on_item(self, **context) -> dict:
         item = context.get('item')

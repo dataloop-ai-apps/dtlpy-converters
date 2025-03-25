@@ -161,7 +161,7 @@ class DataloopToCoco(BaseExportConverter):
         Callback to run the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
         """
-        kwargs = self.on_dataset_start(**kwargs)
+        kwargs = await self.on_dataset_start(**kwargs)
         if self.download_annotations:
             self.dataset.download_annotations(local_path=self.input_annotations_path,
                                               filters=self.filters)
@@ -188,7 +188,8 @@ class DataloopToCoco(BaseExportConverter):
                                                             dataset=self.dataset,
                                                             annotations=annotations)))
         await asyncio.gather(*futures)
-        return await self.on_dataset_end(**kwargs)
+        kwargs = await self.on_dataset_end(**kwargs)
+        return kwargs
 
     async def on_dataset_end(self, **kwargs):
         final_json = {'annotations': list(self.annotations.values()),

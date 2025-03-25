@@ -59,7 +59,7 @@ class DataloopToVoc(BaseExportConverter):
         Callback to run the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
         """
-        kwargs = self.on_dataset_start(**kwargs)
+        kwargs = await self.on_dataset_start(**kwargs)
         self.to_path_anns = os.path.join(self.output_annotations_path, 'annotations')
         self.to_path_masks = os.path.join(self.output_annotations_path, 'segmentation_class')
 
@@ -90,7 +90,8 @@ class DataloopToVoc(BaseExportConverter):
                     )
                 )
 
-        return await self.on_dataset_end(**kwargs)
+        kwargs = await self.on_dataset_end(**kwargs)
+        return kwargs
 
     async def on_item(self, **kwargs):
         """
