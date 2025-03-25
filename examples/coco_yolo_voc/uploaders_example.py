@@ -10,7 +10,7 @@ converter = CocoToDataloop(
     dataset=coco_dataset,
     input_items_path=r'../coco/images',
     input_annotations_path=r'../coco/coco',
-    upload_items=True,
+    upload_items=True
 )
 converter.convert(
     coco_json_filename='annotations.json',
@@ -28,7 +28,7 @@ converter = YoloToDataloop(
     input_items_path=r'../yolo/input',
     input_annotations_path=r'../yolo/yolo/annotations',
     upload_items=True,
-    add_labels_to_recipe=True,
+    add_labels_to_recipe=True
 )
 converter.convert(
     labels_txt_filepath=r'../yolo/yolo/labels.txt'
