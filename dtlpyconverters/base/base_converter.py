@@ -10,6 +10,7 @@ logger = logging.getLogger(name='dtlpy-converters')
 
 
 def _get_event_loop():
+    nest_asyncio.apply()
     try:
         loop = asyncio.get_event_loop()
     except RuntimeError as e:
@@ -39,7 +40,6 @@ class BaseExportConverter:
         return_error_filepath=False,
         label_to_id_mapping: dict = None,
     ):
-        nest_asyncio.apply()
         if output_items_path is None:
             output_items_path = output_annotations_path
         if input_annotations_path is None:
@@ -176,7 +176,6 @@ class BaseImportConverter:
         concurrency=6,
         return_error_filepath=False,
     ):
-        nest_asyncio.apply()
         if output_annotations_path is None:
             output_annotations_path = input_annotations_path
         if input_items_path is None:

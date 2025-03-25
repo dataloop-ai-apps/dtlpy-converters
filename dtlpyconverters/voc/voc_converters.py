@@ -2,14 +2,11 @@ from jinja2 import Environment, PackageLoader
 import xml.etree.ElementTree as Et
 from pathlib import Path
 import dtlpy as dl
-import logging
 import tqdm
 import json
 import os
 
-from ..base import BaseExportConverter, BaseImportConverter
-
-logger = logging.getLogger(__name__)
+from ..base import BaseExportConverter, BaseImportConverter, logger
 
 
 class DataloopToVoc(BaseExportConverter):

@@ -3,15 +3,12 @@ from pathlib import Path
 import dtlpy as dl
 import numpy as np
 import traceback
-import logging
 import tqdm
 import json
 import os
 from typing import List
 
-from ..base import BaseExportConverter, BaseImportConverter
-
-logger = logging.getLogger('dtlpyconverters')
+from ..base import BaseExportConverter, BaseImportConverter, logger
 
 try:
     import pycocotools

@@ -2,15 +2,12 @@ from pathlib import Path
 from PIL import Image
 import dtlpy as dl
 import numpy as np
-import logging
 import time
 import json
 import os
 import cv2
 
-from ..base import BaseExportConverter, BaseImportConverter
-
-logger = logging.getLogger(name='dtlpy')
+from ..base import BaseExportConverter, BaseImportConverter, logger
 
 
 class YoloToDataloop(BaseImportConverter):
