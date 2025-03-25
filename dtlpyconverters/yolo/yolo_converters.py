@@ -7,7 +7,6 @@ import time
 import json
 import os
 import cv2
-from pandas.core.window.doc import kwargs_scipy
 
 from ..base import BaseExportConverter, BaseImportConverter
 
