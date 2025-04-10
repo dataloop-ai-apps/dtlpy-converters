@@ -1,166 +1,157 @@
 {
-    "name": "dtlpy-converters",
-    "displayName": "Dataloop Converters",
-    "description": "Dataloop Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
-    "attributes": {
-      "Category": "Application",
-      "Provider": "Dataloop",
-      "Application Type": "Function",
-      "Converters": [
-        "COCO",
-        "YOLO",
-        "VOC"
-      ],
-      "Media Type": [
-        "Image",
-        "Video"
-      ],
-      "Annotation Type": [
-        "Bounding Box",
-        "Polygon",
-        "Semantic Segmentation"
-      ],
-      "License": "Apache 2.0"
-    },
-    "version": "3.0.10",
-    "scope": "public",
-    "codebase": {
-        "type": "git",
-        "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
-        "gitTag": "3.0.10"
-    },
-    "components": {
-        "modules": [
-            {
-                "name": "dtlpy-converters",
-                "entryPoint": "dtlpyconverters/services/converters_service.py",
-                "className": "DataloopConverters",
-                "initInputs": [
-                ],
-                "functions": [
-                    {
-                        "name": "dataloop_to_coco",
-                        "description": "Convert dataloop dataset to COCO format",
-                        "input": [
-                            {
-                                "type": "Dataset",
-                                "name": "dataset"
-                            },
-                            {
-                                "type": "Json",
-                                "name": "query"
-                            }
-                        ],
-                        "output": [
-                            {
-                                "type": "Item",
-                                "name": "item"
-                            }
-                        ],
-                        "displayName": "COCO Converter"
-                    },
-                    {
-                        "name": "dataloop_to_voc",
-                        "description": "Convert dataloop dataset to VOC format",
-                        "input": [
-                            {
-                                "type": "Dataset",
-                                "name": "dataset"
-                            },
-                            {
-                                "type": "Json",
-                                "name": "query"
-                            }
-                        ],
-                        "output": [
-                            {
-                                "type": "Item",
-                                "name": "item"
-                            }
-                        ],
-                        "displayName": "VOC Converter"
-                    },
-                    {
-                        "name": "dataloop_to_yolo",
-                        "description": "Convert dataloop dataset to YOLO format",
-                        "input": [
-                            {
-                                "type": "Dataset",
-                                "name": "dataset"
-                            },
-                            {
-                                "type": "Json",
-                                "name": "query"
-                            }
-                        ],
-                        "output": [
-                            {
-                                "type": "Item",
-                                "name": "item"
-                            }
-                        ],
-                        "displayName": "YOLO Converter"
-                    }
-                ]
-            }
-        ],
-        "services": [
-            {
-                "name": "dtlpy-converters",
-                "moduleName": "dtlpy-converters",
-                "runtime": {
-                    "podType": "highmem-m",
-                    "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.0.9",
-                    "numReplicas": 1,
-                    "concurrency": 1,
-                    "pyPackages": {},
-                    "singleAgent": false,
-                    "autoscaler": {
-                        "type": "rabbitmq",
-                        "minReplicas": 0,
-                        "maxReplicas": 10,
-                        "queueLength": 2
-                    },
-                    "preemptible": false,
-                    "executionTimeout": 21600,
-                    "drainTime": 600,
-                    "onReset": "failed",
-                    "runExecutionAsProcess": false
-                },
-                "maxAttempts": 2
-            }
-        ],
-        "toolbars": [
-            {
-                "displayName": "COCO Converter 2.0",
-                "invoke": {
-                    "type": "function",
-                    "namespace": "dtlpy-converters.dataloop_to_coco"
-                },
-                "location": "datasetBrowserApps",
-                "icon": "icon-dl-edit",
-                "action": "download"
-            },
-            {
-                "displayName": "YOLO Converter 2.0",
-                "invoke": {
-                    "type": "function",
-                    "namespace": "dtlpy-converters.dataloop_to_yolo"
-                },
-                "location": "datasetBrowserApps",
-                "icon": "icon-dl-edit",
-                "action": "download"
-            },
-            {
-                "displayName": "VOC Converter 2.0",
-                "invoke": {
-                    "type": "function",
-                    "namespace": "dtlpy-converters.dataloop_to_voc"
-                },
-                "location": "datasetBrowserApps",
-                "icon": "icon-dl-edit",
-                "action": "download"
-            }
+  "name": "dtlpy-converters",
+  "displayName": "Dataloop Converters",
+  "description": "Dataloop Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
+  "attributes": {
+    "Category": "Application",
+    "Provider": "Dataloop",
+    "Application Type": "Function",
+    "Converters": ["COCO", "YOLO", "VOC"],
+    "Media Type": ["Image", "Video"],
+    "Annotation Type": ["Bounding Box", "Polygon", "Semantic Segmentation"],
+    "License": "Apache 2.0"
+  },
+  "version": "3.0.10",
+  "scope": "public",
+  "codebase": {
+    "type": "git",
+    "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
+    "gitTag": "3.0.10"
+  },
+  "components": {
+    "modules": [
+      {
+        "name": "dtlpy-converters",
+        "entryPoint": "dtlpyconverters/services/converters_service.py",
+        "className": "DataloopConverters",
+        "initInputs": [],
+        "functions": [
+          {
+            "name": "dataloop_to_coco",
+            "description": "Convert dataloop dataset to COCO format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "COCO Converter"
+          },
+          {
+            "name": "dataloop_to_voc",
+            "description": "Convert dataloop dataset to VOC format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "VOC Converter"
+          },
+          {
+            "name": "dataloop_to_yolo",
+            "description": "Convert dataloop dataset to YOLO format",
+            "input": [
+              {
+                "type": "Dataset",
+                "name": "dataset"
+              },
+              {
+                "type": "Json",
+                "name": "query"
+              }
+            ],
+            "output": [
+              {
+                "type": "Item",
+                "name": "item"
+              }
+            ],
+            "displayName": "YOLO Converter"
+          }
         ]
-    }
+      }
+    ],
+    "services": [
+      {
+        "name": "dtlpy-converters",
+        "moduleName": "dtlpy-converters",
+        "runtime": {
+          "podType": "highmem-m",
+          "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.0.9",
+          "numReplicas": 1,
+          "concurrency": 1,
+          "pyPackages": {},
+          "singleAgent": false,
+          "autoscaler": {
+            "type": "rabbitmq",
+            "minReplicas": 0,
+            "maxReplicas": 10,
+            "queueLength": 2
+          },
+          "preemptible": false,
+          "executionTimeout": 21600,
+          "drainTime": 600,
+          "onReset": "failed",
+          "runExecutionAsProcess": false
+        },
+        "maxAttempts": 2
+      }
+    ],
+    "toolbars": [
+      {
+        "name": "coco-converter-2.0",
+        "displayName": "COCO Converter 2.0",
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_coco"
+        },
+        "location": "datasetBrowserApps",
+        "icon": "icon-dl-edit",
+        "action": "download"
+      },
+      {
+        "name": "yolo-converter-2.0",
+        "displayName": "YOLO Converter 2.0",
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_yolo"
+        },
+        "location": "datasetBrowserApps",
+        "icon": "icon-dl-edit",
+        "action": "download"
+      },
+      {
+        "name": "voc-converter-2.0",
+        "displayName": "VOC Converter 2.0",
+        "invoke": {
+          "type": "function",
+          "namespace": "dtlpy-converters.dataloop_to_voc"
+        },
+        "location": "datasetBrowserApps",
+        "icon": "icon-dl-edit",
+        "action": "download"
+      }
+    ]
+  }
 }
