@@ -12,15 +12,15 @@ nest_asyncio.apply()
 
 
 def get_event_loop():
+    loop = None
     try:
         loop = asyncio.get_event_loop()
-    # TODO: use 2 try instead of str check
-    except RuntimeError as e:
-        if "no current event loop" in str(e):
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop=loop)
-        else:
-            raise e
+    except RuntimeError:
+        pass
+
+    if loop is None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop=loop)
     return loop
 
 
