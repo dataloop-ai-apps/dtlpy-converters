@@ -6,7 +6,7 @@ import tqdm
 import json
 import os
 
-from ..base import BaseExportConverter, BaseImportConverter, logger
+from ..base import BaseExportConverter, BaseImportConverter, logger, get_event_loop
 
 
 class DataloopToVoc(BaseExportConverter):
@@ -59,7 +59,6 @@ class DataloopToVoc(BaseExportConverter):
         Callback to run the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
         """
-        kwargs = await self.on_dataset_start(**kwargs)
         self.to_path_anns = os.path.join(self.output_annotations_path, 'annotations')
         self.to_path_masks = os.path.join(self.output_annotations_path, 'segmentation_class')
 
@@ -90,7 +89,6 @@ class DataloopToVoc(BaseExportConverter):
                     )
                 )
 
-        kwargs = await self.on_dataset_end(**kwargs)
         return kwargs
 
     async def on_item(self, **kwargs):
@@ -203,6 +201,16 @@ class VocToDataloop(BaseImportConverter):
             concurrency=concurrency,
             return_error_filepath=return_error_filepath,
         )
+
+    def convert(self, **kwargs):
+        """
+        Sync call to 'convert_dataset'.
+        :return:
+        """
+        loop = get_event_loop()
+        loop.run_until_complete(future=self.convert_dataset(
+            **kwargs
+        ))
 
     async def convert_dataset(self, **kwargs):
         """

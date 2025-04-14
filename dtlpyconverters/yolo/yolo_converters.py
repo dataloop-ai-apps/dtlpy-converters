@@ -51,7 +51,6 @@ class DataloopToYolo(BaseExportConverter):
         Callback to run the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
         """
-        context = await self.on_dataset_start(**context)
         if self.download_annotations:
             self.dataset.download_annotations(local_path=self.input_annotations_path,
                                               filters=self.filters)
@@ -89,7 +88,6 @@ class DataloopToYolo(BaseExportConverter):
                 )
             )
         logger.info('Done converting {} items in {:.2f}[s]'.format(len(files), time.time() - tic))
-        context = await self.on_dataset_end(**context)
         return context
 
     async def on_item(self, **context) -> dict:
@@ -354,7 +352,7 @@ class YoloToDataloop(BaseImportConverter):
 
     async def convert_dataset(self, labels_txt_filepath):
         """
-        Converting a dataset from Yolo format to Dataloop.
+        Converting a dataset from YOLO format to Dataloop.
         :param labels_txt_filepath: path to yolo labels txt file.
         :return:
         """
@@ -383,7 +381,7 @@ class YoloToDataloop(BaseImportConverter):
 
     async def on_item(self, **context):
         """
-        Converting an item from Yolo format to Dataloop.
+        Converting an item from YOLO format to Dataloop.
         """
         annotation_filepath = context.get('annotation_filepath')
         with open(annotation_filepath, 'r') as f:

@@ -133,27 +133,14 @@ class DataloopToCoco(BaseExportConverter):
 
         return categories
 
-    def convert(self, use_rle=True, **kwargs):
+    async def convert_dataset(self, **kwargs):
         """
-        Sync call to 'convert_dataset'.
+        Convert Dataloop Dataset annotations to COCO format.
         :param use_rle: convert both segmentation and polygons to RLE encoding.
             if None - default for segmentation is RLE default for polygon is coordinates list
         :return:
         """
-        loop = get_event_loop()
-        loop.run_until_complete(future=self.convert_dataset(
-            use_rle=use_rle,
-            **kwargs
-        ))
-
-    async def convert_dataset(self, use_rle=True, **kwargs):
-        """
-        Convert Dataloop Dataset annotation to COCO format.
-        :param use_rle: convert both segmentation and polygons to RLE encoding.
-            if None - default for segmentation is RLE default for polygon is coordinates list
-        :return:
-        """
-        self.use_rle = use_rle
+        self.use_rle = kwargs.get("use_rle", True)
         return await self.on_dataset(**kwargs)
 
     async def on_dataset(self, **kwargs):
@@ -578,7 +565,7 @@ class CocoToDataloop(BaseImportConverter):
                 coco_json_filename='coco.json',
                 to_polygon=False):
         """
-        Converting a dataset from Coco format to Dataloop.
+        Sync call to 'convert_dataset'.
         :param annotation_options: dataloop annotation type options to export from: SEGMENTATION, POSE and BOX (by default: BOX)
         :param coco_json_filename: coco json filename
         :param to_polygon:
@@ -596,7 +583,7 @@ class CocoToDataloop(BaseImportConverter):
                               coco_json_filename='coco.json',
                               to_polygon=False):
         """
-        Converting a dataset from Coco format to Dataloop.
+        Converting a dataset from COCO format to Dataloop.
         :param annotation_options: dataloop annotation type options to export from: SEGMENTATION, POSE and BOX (by default: BOX)
         :param coco_json_filename: coco json filename
         :param to_polygon:

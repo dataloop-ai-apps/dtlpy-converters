@@ -14,6 +14,7 @@ nest_asyncio.apply()
 def get_event_loop():
     try:
         loop = asyncio.get_event_loop()
+    # TODO: use 2 try instead of str check
     except RuntimeError as e:
         if "no current event loop" in str(e):
             loop = asyncio.new_event_loop()
@@ -68,7 +69,7 @@ class BaseExportConverter:
 
     async def convert_dataset(self, **kwargs):
         """
-        :param kwargs:
+        Convert Dataloop Dataset annotations to the selected format.
         :return:
         """
         return await self.on_dataset_end(**await self.on_dataset(**await self.on_dataset_start(**kwargs)))
@@ -195,8 +196,11 @@ class BaseImportConverter:
         """
         Sync call to 'convert_dataset'.
         """
-        loop = get_event_loop()
-        loop.run_until_complete(future=self.convert_dataset(**kwargs))
+        raise NotImplementedError
 
     async def convert_dataset(self, **kwargs):
+        """
+        Converting a dataset from the selected format to Dataloop.
+        :return:
+        """
         raise NotImplementedError
