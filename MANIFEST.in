@@ -1,1 +1,1 @@
-include dataloop/converters/voc/voc_annotation_template.xml
+include dtlpyconverters/voc/voc_annotation_template.xml
