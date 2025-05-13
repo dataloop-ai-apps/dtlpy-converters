@@ -2,14 +2,11 @@ from jinja2 import Environment, PackageLoader
 import xml.etree.ElementTree as Et
 from pathlib import Path
 import dtlpy as dl
-import logging
 import tqdm
 import json
 import os
 
-from ..base import BaseExportConverter, BaseImportConverter
-
-logger = logging.getLogger(__name__)
+from ..base import BaseExportConverter, BaseImportConverter, logger, get_event_loop
 
 
 class DataloopToVoc(BaseExportConverter):
@@ -59,7 +56,7 @@ class DataloopToVoc(BaseExportConverter):
 
     async def on_dataset(self, **kwargs):
         """
-        Callback to tun the conversion on a dataset.
+        Callback to run the conversion on a dataset.
         Will be called after on_dataset_start and before on_dataset_end.
         """
         self.to_path_anns = os.path.join(self.output_annotations_path, 'annotations')
@@ -93,11 +90,6 @@ class DataloopToVoc(BaseExportConverter):
                 )
 
         return kwargs
-
-    async def on_dataset_end(self, **kwargs):
-        """
-        """
-        ...
 
     async def on_item(self, **kwargs):
         """
@@ -210,7 +202,21 @@ class VocToDataloop(BaseImportConverter):
             return_error_filepath=return_error_filepath,
         )
 
+    def convert(self, **kwargs):
+        """
+        Sync call to 'convert_dataset'.
+        :return:
+        """
+        loop = get_event_loop()
+        loop.run_until_complete(future=self.convert_dataset(
+            **kwargs
+        ))
+
     async def convert_dataset(self, **kwargs):
+        """
+        Converting a dataset from VOC format to Dataloop.
+        :return:
+        """
         xml_files = list(Path(self.input_annotations_path).rglob('*.xml'))
         self.pbar = tqdm.tqdm(total=len(xml_files))
         for annotation_xml_filepath in xml_files:

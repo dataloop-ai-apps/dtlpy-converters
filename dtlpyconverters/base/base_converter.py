@@ -3,8 +3,25 @@ import dtlpy as dl
 import logging
 import time
 import json
+import asyncio
+import nest_asyncio
 
 logger = logging.getLogger(name='dtlpy-converters')
+
+nest_asyncio.apply()
+
+
+def get_event_loop():
+    loop = None
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        pass
+
+    if loop is None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop=loop)
+    return loop
 
 
 class BaseExportConverter:
@@ -42,9 +59,17 @@ class BaseExportConverter:
         self.return_error_filepath = return_error_filepath
         self.label_to_id_mapping = label_to_id_mapping
 
+    def convert(self, **kwargs):
+        """
+        Sync call to 'convert_dataset'.
+        :return:
+        """
+        loop = get_event_loop()
+        return loop.run_until_complete(future=self.convert_dataset(**kwargs))
+
     async def convert_dataset(self, **kwargs):
         """
-        :param kwargs:
+        Convert Dataloop Dataset annotations to the selected format.
         :return:
         """
         return await self.on_dataset_end(**await self.on_dataset(**await self.on_dataset_start(**kwargs)))
@@ -166,3 +191,16 @@ class BaseImportConverter:
         self.add_labels_to_recipe = add_labels_to_recipe
         self.concurrency = concurrency
         self.return_error_filepath = return_error_filepath
+
+    def convert(self, **kwargs):
+        """
+        Sync call to 'convert_dataset'.
+        """
+        raise NotImplementedError
+
+    async def convert_dataset(self, **kwargs):
+        """
+        Converting a dataset from the selected format to Dataloop.
+        :return:
+        """
+        raise NotImplementedError
