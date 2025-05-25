@@ -110,11 +110,11 @@
             "queueLength": 2
           },
           "preemptible": false,
-          "executionTimeout": 21600,
           "drainTime": 600,
           "onReset": "failed",
           "runExecutionAsProcess": false
         },
+        "executionTimeout": 21600,
         "maxAttempts": 2
       }
     ],
