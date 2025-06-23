@@ -3,9 +3,7 @@
   "displayName": "Dataloop Converters",
   "description": "Dataloop Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
   "attributes": {
-    "Category": "Application",
     "Provider": "Dataloop",
-    "Application Type": "Function",
     "Converters": ["COCO", "YOLO", "VOC"],
     "Media Type": ["Image", "Video"],
     "Annotation Type": ["Bounding Box", "Polygon", "Semantic Segmentation"],
@@ -121,7 +119,7 @@
     "toolbars": [
       {
         "name": "coco-converter-2.0",
-        "displayName": "COCO Converter 2.0",
+        "displayName": "COCO Converter",
         "invoke": {
           "type": "function",
           "namespace": "dtlpy-converters.dataloop_to_coco"
@@ -132,7 +130,7 @@
       },
       {
         "name": "yolo-converter-2.0",
-        "displayName": "YOLO Converter 2.0",
+        "displayName": "YOLO Converter",
         "invoke": {
           "type": "function",
           "namespace": "dtlpy-converters.dataloop_to_yolo"
@@ -143,7 +141,7 @@
       },
       {
         "name": "voc-converter-2.0",
-        "displayName": "VOC Converter 2.0",
+        "displayName": "VOC Converter",
         "invoke": {
           "type": "function",
           "namespace": "dtlpy-converters.dataloop_to_voc"
