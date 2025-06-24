@@ -97,23 +97,18 @@
         "runtime": {
           "podType": "highmem-m",
           "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.0.9",
-          "numReplicas": 1,
           "concurrency": 1,
-          "pyPackages": {},
-          "singleAgent": false,
+          "botUserName": "pipelines@dataloop.ai",
           "autoscaler": {
             "type": "rabbitmq",
             "minReplicas": 0,
             "maxReplicas": 10,
-            "queueLength": 2
+            "queueLength": 5
           },
-          "preemptible": false,
-          "drainTime": 600,
-          "onReset": "failed",
-          "runExecutionAsProcess": false
+          "preemptible": false
         },
         "executionTimeout": 21600,
-        "maxAttempts": 2
+        "maxAttempts": 3
       }
     ],
     "toolbars": [
