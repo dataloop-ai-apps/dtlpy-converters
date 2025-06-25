@@ -9,12 +9,12 @@
     "Annotation Type": ["Bounding Box", "Polygon", "Semantic Segmentation"],
     "License": "Apache 2.0"
   },
-  "version": "3.0.17",
+  "version": "3.0.18",
   "scope": "public",
   "codebase": {
     "type": "git",
     "gitUrl": "https://github.com/dataloop-ai-apps/dtlpy-converters.git",
-    "gitTag": "3.0.17"
+    "gitTag": "3.0.18"
   },
   "components": {
     "modules": [
