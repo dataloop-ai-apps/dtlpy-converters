@@ -2,3 +2,4 @@ dtlpy
 pandas
 nest_asyncio
 pycocotools
+aiohttp>=3.12.14 # not directly required, pinned by Snyk to avoid a vulnerability
