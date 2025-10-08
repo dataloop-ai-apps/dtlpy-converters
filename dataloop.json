@@ -4,6 +4,7 @@
   "description": "Dataloop Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
   "attributes": {
     "Provider": "Dataloop",
+    "Category": "Application",
     "Converters": ["COCO", "YOLO", "VOC"],
     "Media Type": ["Image", "Video"],
     "Annotation Type": ["Bounding Box", "Polygon", "Semantic Segmentation"],
