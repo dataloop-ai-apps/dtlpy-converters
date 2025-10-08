@@ -4,6 +4,7 @@
   "description": "Dataloop Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
   "attributes": {
     "Provider": "Dataloop",
+    "Category": "Application",
     "Converters": ["COCO", "YOLO", "VOC"],
     "Media Type": ["Image", "Video"],
     "Annotation Type": ["Bounding Box", "Polygon", "Semantic Segmentation"],
@@ -96,7 +97,7 @@
         "moduleName": "dtlpy-converters",
         "runtime": {
           "podType": "highmem-m",
-          "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.0.9",
+          "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.1.0",
           "concurrency": 1,
           "autoscaler": {
             "type": "rabbitmq",
