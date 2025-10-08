@@ -1,3 +1,3 @@
-FROM dataloopai/dtlpy-agent:cpu.py3.10.opencv
+FROM hub.dataloop.ai/dtlpy-runner-images/cpu:python3.11_opencv
 
-RUN pip install pandas nest_asyncio pycocotools
+RUN pip install nest_asyncio pycocotools
