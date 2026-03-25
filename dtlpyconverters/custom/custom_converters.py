@@ -3,11 +3,41 @@ import pandas as pd
 import dtlpy as dl
 import logging
 import json
+import ast
 import os
 
 from ..base import BaseExportConverter
 
 logger = logging.getLogger(name='dtlpy-converters')
+
+
+class _SafeExprValidator(ast.NodeVisitor):
+    """Validate that an AST only contains safe attribute-access expressions."""
+    _ALLOWED_NODES = (
+        ast.Expression, ast.Attribute, ast.Name, ast.Load,
+        ast.Subscript, ast.Constant, ast.Index, ast.Slice,
+        ast.Tuple, ast.List, ast.UnaryOp, ast.BinOp,
+        ast.Add, ast.Sub, ast.Mult, ast.Div,
+    )
+
+    def generic_visit(self, node):
+        if not isinstance(node, self._ALLOWED_NODES):
+            raise ValueError(
+                f"Unsafe expression node: {type(node).__name__}"
+            )
+        super().generic_visit(node)
+
+
+def _safe_eval(expr: str, allowed_vars: dict):
+    """
+    Evaluate a simple attribute-access expression against a restricted namespace.
+    Only allows attribute access, indexing, and constants — no function calls,
+    imports, or arbitrary code execution.
+    """
+    tree = ast.parse(expr.strip(), mode='eval')
+    _SafeExprValidator().visit(tree)
+    code = compile(tree, '<template>', 'eval')
+    return eval(code, {"__builtins__": {}}, allowed_vars)
 
 
 class DataloopToCustomConverter(BaseExportConverter):
@@ -168,7 +198,8 @@ class DataloopToCustomConverter(BaseExportConverter):
                     if 'frame' in value or 'annotation' in value:
                         self.outputs[dict_item_key][item.id][header] = None
                         continue
-                    self.outputs[dict_item_key][item.id][header] = eval(value)
+                    self.outputs[dict_item_key][item.id][header] = _safe_eval(
+                        value, {"item": item, "project": project, "dataset": self.dataset})
             elif 'json' == self.json_template.get('output'):
                 raise NotImplementedError('Support for Json outputs is not supported yet')
             else:
@@ -194,7 +225,9 @@ class DataloopToCustomConverter(BaseExportConverter):
                             if 'frame' in value:
                                 self.outputs[dict_item_key][annotation.id][header] = None
                                 continue
-                            self.outputs[dict_item_key][annotation.id][header] = eval(value)
+                            self.outputs[dict_item_key][annotation.id][header] = _safe_eval(
+                                value, {"item": item, "annotation": annotation,
+                                        "project": project, "dataset": self.dataset})
                     elif 'json' == self.json_template.get('output'):
                         raise NotImplementedError('Support for Json outputs is not supported yet')
                     else:
@@ -219,7 +252,9 @@ class DataloopToCustomConverter(BaseExportConverter):
             kwargs['output'][(annotation.id, frame_num)] = dict()
             if "csv" == self.json_template.get('output'):
                 for header, value in self.json_template.get('template').items():
-                    kwargs['output'][(annotation.id, frame_num)][header] = eval(value)
+                    kwargs['output'][(annotation.id, frame_num)][header] = _safe_eval(
+                        value, {"project": project, "dataset": dataset, "item": item,
+                                "annotation": annotation, "frame": frame, "frame_num": frame_num})
             elif 'json' == self.json_template.get('output'):
                 raise NotImplementedError('Support for Json outputs is not supported yet')
             else:
