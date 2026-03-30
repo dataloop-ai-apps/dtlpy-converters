@@ -18,6 +18,7 @@ class _SafeExprValidator(ast.NodeVisitor):
         ast.Subscript, ast.Constant, ast.Index, ast.Slice,
         ast.Tuple, ast.List, ast.UnaryOp, ast.BinOp,
         ast.Add, ast.Sub, ast.Mult, ast.Div,
+        ast.Call, ast.keyword,
     )
 
     def generic_visit(self, node):
