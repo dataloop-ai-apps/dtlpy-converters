@@ -1,9 +1,9 @@
 {
   "name": "dtlpy-converters",
-  "displayName": "Dataloop Converters",
-  "description": "Dataloop Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
+  "displayName": "DDOE Converters",
+  "description": "DDOE Converters Application (Notice: Image is supported by all, but Video is supported by YOLO only)",
   "attributes": {
-    "Provider": "Dataloop",
+    "Provider": "DDOE",
     "Converters": ["COCO", "YOLO", "VOC"],
     "Media Type": ["Image", "Video"],
     "Annotation Type": ["Bounding Box", "Polygon", "Semantic Segmentation"],
@@ -26,7 +26,7 @@
         "functions": [
           {
             "name": "dataloop_to_coco",
-            "description": "Convert dataloop dataset to COCO format",
+            "description": "Convert DDOE dataset to COCO format",
             "input": [
               {
                 "type": "Dataset",
@@ -47,7 +47,7 @@
           },
           {
             "name": "dataloop_to_voc",
-            "description": "Convert dataloop dataset to VOC format",
+            "description": "Convert DDOE dataset to VOC format",
             "input": [
               {
                 "type": "Dataset",
@@ -68,7 +68,7 @@
           },
           {
             "name": "dataloop_to_yolo",
-            "description": "Convert dataloop dataset to YOLO format",
+            "description": "Convert DDOE dataset to YOLO format",
             "input": [
               {
                 "type": "Dataset",

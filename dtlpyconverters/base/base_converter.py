@@ -69,7 +69,7 @@ class BaseExportConverter:
 
     async def convert_dataset(self, **kwargs):
         """
-        Convert Dataloop Dataset annotations to the selected format.
+        Convert DDOE Dataset annotations to the selected format.
         :return:
         """
         return await self.on_dataset_end(**await self.on_dataset(**await self.on_dataset_start(**kwargs)))
@@ -200,7 +200,7 @@ class BaseImportConverter:
 
     async def convert_dataset(self, **kwargs):
         """
-        Converting a dataset from the selected format to Dataloop.
+        Converting a dataset from the selected format to DDOE.
         :return:
         """
         raise NotImplementedError

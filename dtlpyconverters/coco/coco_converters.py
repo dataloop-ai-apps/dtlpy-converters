@@ -67,15 +67,15 @@ class DataloopToCoco(BaseExportConverter):
                  return_error_filepath=False,
                  label_to_id_mapping=None):
         """
-        Convert Dataloop Dataset annotation to COCO format.
+        Convert DDOE Dataset annotation to COCO format.
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
         :param output_items_path: where to save the downloaded items
-        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param input_annotations_path: where to save the downloaded DDOE annotations files. Default is output_annotations_path
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
-        :param download_annotations: download annotations from Dataloop or use local
+        :param download_annotations: download annotations from DDOE or use local
         :param label_to_id_mapping: dictionary to map labels to ids
         :return:
         """
@@ -135,7 +135,7 @@ class DataloopToCoco(BaseExportConverter):
 
     async def convert_dataset(self, **kwargs):
         """
-        Convert Dataloop Dataset annotations to COCO format.
+        Convert DDOE Dataset annotations to COCO format.
         :param use_rle: convert both segmentation and polygons to RLE encoding.
             if None - default for segmentation is RLE default for polygon is coordinates list
         :return:
@@ -566,7 +566,7 @@ class CocoToDataloop(BaseImportConverter):
                 to_polygon=False):
         """
         Sync call to 'convert_dataset'.
-        :param annotation_options: dataloop annotation type options to export from: SEGMENTATION, POSE and BOX (by default: BOX)
+        :param annotation_options: DDOE annotation type options to export from: SEGMENTATION, POSE and BOX (by default: BOX)
         :param coco_json_filename: coco json filename
         :param to_polygon:
         :return:
@@ -583,8 +583,8 @@ class CocoToDataloop(BaseImportConverter):
                               coco_json_filename='coco.json',
                               to_polygon=False):
         """
-        Converting a dataset from COCO format to Dataloop.
-        :param annotation_options: dataloop annotation type options to export from: SEGMENTATION, POSE and BOX (by default: BOX)
+        Converting a dataset from COCO format to DDOE.
+        :param annotation_options: DDOE annotation type options to export from: SEGMENTATION, POSE and BOX (by default: BOX)
         :param coco_json_filename: coco json filename
         :param to_polygon:
         :return:
@@ -634,7 +634,7 @@ class CocoToDataloop(BaseImportConverter):
 
     async def on_annotation(self, **kwargs):
         """
-        Convert from COCO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
+        Convert from COCO format to DDOE format. Use this as conversion_func param for functions that ask for this param.
 
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
 

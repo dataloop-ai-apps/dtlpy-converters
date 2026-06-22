@@ -22,15 +22,15 @@ class DataloopToYolo(BaseExportConverter):
                  concurrency=6,
                  return_error_filepath=False):
         """
-        Convert Dataloop Dataset annotation to YOLO format.
+        Convert DDOE Dataset annotation to YOLO format.
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
         :param output_items_path: where to save the downloaded items
-        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param input_annotations_path: where to save the downloaded DDOE annotations files. Default is output_annotations_path
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
-        :param download_annotations: download annotations from Dataloop or use local
+        :param download_annotations: download annotations from DDOE or use local
         :return:
         """
         # global vars
@@ -132,7 +132,7 @@ class DataloopToYolo(BaseExportConverter):
 
     async def on_box(self, **context) -> dict:
         """
-        Convert from DATALOOP format to YOLO format. Use this as conversion_func param for functions that ask for this param.
+        Convert from DDOE format to YOLO format. Use this as conversion_func param for functions that ask for this param.
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
         :param context:
                 See below
@@ -203,7 +203,7 @@ class DataloopToYolo(BaseExportConverter):
 
     async def on_polygon(self, **context) -> dict:
         """
-        Convert from DATALOOP format to YOLO format. Use this as conversion_func param for functions that ask for this param.
+        Convert from DDOE format to YOLO format. Use this as conversion_func param for functions that ask for this param.
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
         :param context:
                 See below
@@ -261,7 +261,7 @@ class DataloopToYolo(BaseExportConverter):
 
     async def on_segmentation(self, **context) -> dict:
         """
-        Convert from DATALOOP format to YOLO format. Use this as conversion_func param for functions that ask for this param.
+        Convert from DDOE format to YOLO format. Use this as conversion_func param for functions that ask for this param.
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
         :param context:
                 See below
@@ -352,7 +352,7 @@ class YoloToDataloop(BaseImportConverter):
 
     async def convert_dataset(self, labels_txt_filepath):
         """
-        Converting a dataset from YOLO format to Dataloop.
+        Converting a dataset from YOLO format to DDOE.
         :param labels_txt_filepath: path to yolo labels txt file.
         :return:
         """
@@ -381,7 +381,7 @@ class YoloToDataloop(BaseImportConverter):
 
     async def on_item(self, **context):
         """
-        Converting an item from YOLO format to Dataloop.
+        Converting an item from YOLO format to DDOE.
         """
         annotation_filepath = context.get('annotation_filepath')
         with open(annotation_filepath, 'r') as f:
@@ -468,7 +468,7 @@ class YoloToDataloop(BaseImportConverter):
 
     async def on_annotation(self, **context) -> dict:
         """
-        Convert from YOLO format to DATALOOP format. Use this as conversion_func param for functions that ask for this param.
+        Convert from YOLO format to DDOE format. Use this as conversion_func param for functions that ask for this param.
 
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
         :param context: additional params

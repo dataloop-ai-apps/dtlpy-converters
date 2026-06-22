@@ -1,6 +1,6 @@
 # Converters
 
-This is a Dataloop App for four global converters:
+This is a DDOE App for four global converters:
 
 1. COCO
 2. YOLO
@@ -24,8 +24,8 @@ For a technical explanation about the base code, please refer to the [Code Archi
 ## Examples
 
 ### Using the package locally:
-* [Example](examples/coco_yolo_voc/converters_example.py) of how to convert a Dataloop dataset to COCO, YOLO, or VOC please refer to the.
-* [Example](examples/coco_yolo_voc/uploaders_example.py) of how to upload a local COCO, YOLO, or VOC dataset to Dataloop.
+* [Example](examples/coco_yolo_voc/converters_example.py) of how to convert a DDOE dataset to COCO, YOLO, or VOC please refer to the.
+* [Example](examples/coco_yolo_voc/uploaders_example.py) of how to upload a local COCO, YOLO, or VOC dataset to DDOE.
 
 ### Exporting annotations from the UI:
 - Navigate to dataset browser.
@@ -91,9 +91,9 @@ for ann in anns:
 ```
 --- 
 
-### Dataloop to Custom CSV:
+### DDOE to Custom CSV:
 
-Dataloop supports creating a Custom csv file from a csv template.
+DDOE supports creating a Custom csv file from a csv template.
 Template example:
 
 ``` json

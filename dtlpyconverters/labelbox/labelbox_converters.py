@@ -72,7 +72,7 @@ class LabelBoxToDataloop(BaseImportConverter):
 
     async def on_annotation(self, **kwargs):
         """
-        Convert from TFRecord format to DATALOOP format.
+        Convert from TFRecord format to DDOE format.
 
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
 
