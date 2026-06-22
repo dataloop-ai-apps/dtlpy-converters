@@ -57,14 +57,14 @@ class DataloopToCustomConverter(BaseExportConverter):
                  concurrency=6,
                  return_error_filepath=False):
         """
-        Convert Dataloop Dataset annotation to COCO format.
+        Convert DDOE Dataset annotation to COCO format.
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
-        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param input_annotations_path: where to save the downloaded DDOE annotations files. Default is output_annotations_path
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
-        :param download_annotations: download annotations from Dataloop or use local
+        :param download_annotations: download annotations from DDOE or use local
         :return:
         """
         # global vars

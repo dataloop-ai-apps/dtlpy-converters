@@ -70,8 +70,8 @@ class DataloopConverters(dl.BaseServiceRunner):
 
     def dataloop_to_coco(self, dataset: dl.Dataset, query=None, download_items=False, download_annotations=True):
         """
-        :param dataset: dataloop dataset
-        :param query: dataloop dql
+        :param dataset: DDOE dataset
+        :param query: DDOE dql
         :param download_items: bool download items
         :param download_annotations: bool download annotations
         :return: item id
@@ -92,8 +92,8 @@ class DataloopConverters(dl.BaseServiceRunner):
 
     def dataloop_to_yolo(self, dataset: dl.Dataset, query=None, download_items=False, download_annotations=True):
         """
-        :param dataset: dataloop dataset
-        :param query: dataloop dql
+        :param dataset: DDOE dataset
+        :param query: DDOE dql
         :param download_items: bool download items
         :param download_annotations: bool download annotations
         :return: item id
@@ -114,8 +114,8 @@ class DataloopConverters(dl.BaseServiceRunner):
 
     def dataloop_to_voc(self, dataset: dl.Dataset, query=None, download_items=False, download_annotations=True):
         """
-        :param dataset: dataloop dataset
-        :param query: dataloop dql
+        :param dataset: DDOE dataset
+        :param query: DDOE dql
         :param download_items: bool download items
         :param download_annotations: bool download annotations
         :return: item id

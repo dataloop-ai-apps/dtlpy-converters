@@ -21,15 +21,15 @@ class DataloopToVoc(BaseExportConverter):
                  concurrency=6,
                  return_error_filepath=False):
         """
-        Convert Dataloop Dataset annotation to VOC format.
+        Convert DDOE Dataset annotation to VOC format.
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
         :param output_items_path: where to save the downloaded items
-        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param input_annotations_path: where to save the downloaded DDOE annotations files. Default is output_annotations_path
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
-        :param download_annotations: download annotations from Dataloop or use local
+        :param download_annotations: download annotations from DDOE or use local
         :return:
         """
         # global vars
@@ -214,7 +214,7 @@ class VocToDataloop(BaseImportConverter):
 
     async def convert_dataset(self, **kwargs):
         """
-        Converting a dataset from VOC format to Dataloop.
+        Converting a dataset from VOC format to DDOE.
         :return:
         """
         xml_files = list(Path(self.input_annotations_path).rglob('*.xml'))
@@ -262,7 +262,7 @@ class VocToDataloop(BaseImportConverter):
 
         if voc_item.find('segmented') is not None and voc_item.find('segmented').text == '1':
             logger.warning(
-                'Only BB conversion is supported in VOC 2 DATALOOP. Segmentation will be ignored. Please contact support')
+                'Only BB conversion is supported in VOC 2 DDOE. Segmentation will be ignored. Please contact support')
 
         voc_annotations = [e for e in voc_item.iter('object')]
 
@@ -276,7 +276,7 @@ class VocToDataloop(BaseImportConverter):
 
     async def on_annotation(self, **kwargs):
         """
-        Convert from VOC format to DATALOOP format.
+        Convert from VOC format to DDOE format.
 
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
 

@@ -111,14 +111,14 @@ class DataloopToTFRecord(BaseExportConverter):
                  concurrency=6,
                  return_error_filepath=False):
         """
-        Convert Dataloop Dataset to TFRecord.
+        Convert DDOE Dataset to TFRecord.
 
         :param dataset: dl.Dataset entity to convert
         :param output_annotations_path: where to save the converted annotations json
-        :param input_annotations_path: where to save the downloaded dataloop annotations files. Default is output_annotations_path
+        :param input_annotations_path: where to save the downloaded DDOE annotations files. Default is output_annotations_path
         :param filters: dl.Filters object to filter the items from dataset
         :param download_items: download the images with the converted annotations
-        :param download_annotations: download annotations from Dataloop or use local
+        :param download_annotations: download annotations from DDOE or use local
         :return:
         """
         super(DataloopToTFRecord, self).__init__(
@@ -135,7 +135,7 @@ class DataloopToTFRecord(BaseExportConverter):
 
     async def convert_dataset(self):
         """
-        Convert Dataloop Dataset annotation to COCO format
+        Convert DDOE Dataset annotation to COCO format
         :return:
         """
         kwargs = dict()
@@ -336,7 +336,7 @@ class TFRecordToDataloop(BaseImportConverter):
 
     async def on_annotation(self, **kwargs) -> dict:
         """
-        Convert from TFRecord format to DATALOOP format.
+        Convert from TFRecord format to DDOE format.
 
         **Prerequisites**: You must be an *owner* or *developer* to use this method.
 

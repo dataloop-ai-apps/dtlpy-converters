@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-# This file is part of Dataloop
+# This file is part of DDOE
 
 from setuptools import setup, find_packages
 
@@ -18,8 +18,8 @@ setup(name='dtlpyconverters',
           'Programming Language :: Python :: 3.9',
       ],
       version='3.0.18',
-      description='Converter for Dataloop annotations format',
-      author='Dataloop Team',
+      description='Converter for DDOE annotations format',
+      author='DDOE Team',
       author_email='info@dataloop.ai',
       long_description=readme,
       long_description_content_type='text/markdown',
