@@ -96,7 +96,7 @@
         "moduleName": "dtlpy-converters",
         "runtime": {
           "podType": "highmem-m",
-          "runnerImage": "gcr.io/viewo-g/piper/agent/runner/apps/dtlpy-converters:3.0.9",
+          "runnerImage": "hub.dataloop.ai/dtlpy-runner-images/cpu:python3.14_full",
           "concurrency": 1,
           "autoscaler": {
             "type": "rabbitmq",
