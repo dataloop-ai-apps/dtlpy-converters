@@ -96,7 +96,7 @@
         "moduleName": "dtlpy-converters",
         "runtime": {
           "podType": "highmem-m",
-          "runnerImage": "hub.dataloop.ai/dtlpy-runner-images/cpu:python3.13_full_bci_0.0.1",
+          "runnerImage": "hub.dataloop.ai/dtlpy-runner-images/cpu:python3.13_full_bci_latest",
           "concurrency": 1,
           "autoscaler": {
             "type": "rabbitmq",
